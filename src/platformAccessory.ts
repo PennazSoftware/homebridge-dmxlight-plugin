@@ -1,6 +1,6 @@
 import { Service, PlatformAccessory, CharacteristicValue } from 'homebridge';
-
 import { DMXLightHomebridgePlatform } from './platform';
+import { DmxController } from './dmx';
 
 /**
  * Platform Accessory
@@ -9,20 +9,31 @@ import { DMXLightHomebridgePlatform } from './platform';
  */
 export class DMXLightPlatformAccessory {
   private service: Service;
+  private dmxController: DmxController;
+  private startChannel: number;
 
   /**
    * These are just used to create a working example
    * You should implement your own code to track the state of your accessory
    */
-  private exampleStates = {
+  private accessoryState = {
     On: false,
-    Brightness: 100,
+    Brightness: 100,  // Values are 0-100
+    Hue: 0,           // Values are 0-360
+    Saturation: 0,    // Values are 0-100
   };
 
   constructor(
     private readonly platform: DMXLightHomebridgePlatform,
     private readonly accessory: PlatformAccessory,
+    startChannel: number,
   ) {
+
+    const properties = this.platform.getConfigProperties();
+    this.startChannel = startChannel;
+
+    // Create the DMX Controller object
+    this.dmxController = DmxController.getInstance(properties.serialPortName, properties.dmxDriverName, this.platform.log);
 
     // set accessory information
     this.accessory.getService(this.platform.Service.AccessoryInformation)!
@@ -36,7 +47,7 @@ export class DMXLightPlatformAccessory {
 
     // set the service name, this is what is displayed as the default name on the Home app
     // in this example we are using the name we stored in the `accessory.context` in the `discoverDevices` method.
-    this.service.setCharacteristic(this.platform.Characteristic.Name, accessory.context.device.exampleDisplayName);
+    this.service.setCharacteristic(this.platform.Characteristic.Name, accessory.context.device.name);
 
     // each service must implement at-minimum the "required characteristics" for the given service type
     // see https://developers.homebridge.io/#/service/Lightbulb
@@ -46,49 +57,18 @@ export class DMXLightPlatformAccessory {
       .onSet(this.setOn.bind(this))                // SET - bind to the `setOn` method below
       .onGet(this.getOn.bind(this));               // GET - bind to the `getOn` method below
 
-    // register handlers for the Brightness Characteristic
+    //register handlers for the Brightness, Hue & Saturation Characteristic
     this.service.getCharacteristic(this.platform.Characteristic.Brightness)
-      .onSet(this.setBrightness.bind(this));       // SET - bind to the 'setBrightness` method below
+      .onSet(this.setBrightness.bind(this))       // SET - bind to the 'setBrightness` method below
+      .onGet(this.getBrightness.bind(this));      // GET - bind to the `getBrightness` method below
 
-    /**
-     * Creating multiple services of the same type.
-     *
-     * To avoid "Cannot add a Service with the same UUID another Service without also defining a unique 'subtype' property." error,
-     * when creating multiple services of the same type, you need to use the following syntax to specify a name and subtype id:
-     * this.accessory.getService('NAME') || this.accessory.addService(this.platform.Service.Lightbulb, 'NAME', 'USER_DEFINED_SUBTYPE_ID');
-     *
-     * The USER_DEFINED_SUBTYPE must be unique to the platform accessory (if you platform exposes multiple accessories, each accessory
-     * can use the same sub type id.)
-     */
+    this.service.getCharacteristic(this.platform.Characteristic.Hue)
+      .onSet(this.setHue.bind(this))              // SET - bind to the 'setHue` method below
+      .onGet(this.getHue.bind(this));             // GET - bind to the `getHue` method below
 
-    // Example: add two "motion sensor" services to the accessory
-    const motionSensorOneService = this.accessory.getService('Motion Sensor One Name') ||
-      this.accessory.addService(this.platform.Service.MotionSensor, 'Motion Sensor One Name', 'YourUniqueIdentifier-1');
-
-    const motionSensorTwoService = this.accessory.getService('Motion Sensor Two Name') ||
-      this.accessory.addService(this.platform.Service.MotionSensor, 'Motion Sensor Two Name', 'YourUniqueIdentifier-2');
-
-    /**
-     * Updating characteristics values asynchronously.
-     *
-     * Example showing how to update the state of a Characteristic asynchronously instead
-     * of using the `on('get')` handlers.
-     * Here we change update the motion sensor trigger states on and off every 10 seconds
-     * the `updateCharacteristic` method.
-     *
-     */
-    let motionDetected = false;
-    setInterval(() => {
-      // EXAMPLE - inverse the trigger
-      motionDetected = !motionDetected;
-
-      // push the new value to HomeKit
-      motionSensorOneService.updateCharacteristic(this.platform.Characteristic.MotionDetected, motionDetected);
-      motionSensorTwoService.updateCharacteristic(this.platform.Characteristic.MotionDetected, !motionDetected);
-
-      this.platform.log.debug('Triggering motionSensorOneService:', motionDetected);
-      this.platform.log.debug('Triggering motionSensorTwoService:', !motionDetected);
-    }, 10000);
+    this.service.getCharacteristic(this.platform.Characteristic.Saturation)
+      .onSet(this.setSaturation.bind(this))       // SET - bind to the 'setSaturation` method below
+      .onGet(this.getSaturation.bind(this));      // GET - bind to the `getSaturation` method below
   }
 
   /**
@@ -97,10 +77,17 @@ export class DMXLightPlatformAccessory {
    */
   async setOn(value: CharacteristicValue) {
     // implement your own code to turn your device on/off
-    this.exampleStates.On = value as boolean;
+    this.accessoryState.On = value as boolean;
 
-    this.platform.log.debug('Set Characteristic On ->', value);
+    if (this.accessoryState.On) {
+      this.dmxController.setOn(this.startChannel);
+    } else {
+      this.dmxController.setOff(this.startChannel);
+    }
+
+    this.platform.log.info('Set Characteristic On ->', value);
   }
+
 
   /**
    * Handle the "GET" requests from HomeKit
@@ -117,14 +104,50 @@ export class DMXLightPlatformAccessory {
    */
   async getOn(): Promise<CharacteristicValue> {
     // implement your own code to check if the device is on
-    const isOn = this.exampleStates.On;
+    const isOn = this.accessoryState.On;
 
-    this.platform.log.debug('Get Characteristic On ->', isOn);
+    this.platform.log.info('Get Characteristic On ->', isOn);
 
     // if you need to return an error to show the device as "Not Responding" in the Home app:
     // throw new this.platform.api.hap.HapStatusError(this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE);
 
     return isOn;
+  }
+
+  async getBrightness(): Promise<CharacteristicValue> {
+    // implement your own code to check if the device is on
+    const brightness = this.accessoryState.Brightness;
+
+    this.platform.log.info('Get Characteristic Brightness ->', brightness);
+
+    // if you need to return an error to show the device as "Not Responding" in the Home app:
+    // throw new this.platform.api.hap.HapStatusError(this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE);
+
+    return brightness;
+  }
+
+  async getHue(): Promise<CharacteristicValue> {
+    // implement your own code to check if the device is on
+    const hue = this.accessoryState.Hue;
+
+    this.platform.log.info('Get Characteristic Hue ->', hue);
+
+    // if you need to return an error to show the device as "Not Responding" in the Home app:
+    // throw new this.platform.api.hap.HapStatusError(this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE);
+
+    return hue;
+  }
+
+  async getSaturation(): Promise<CharacteristicValue> {
+    // implement your own code to check if the device is on
+    const saturation = this.accessoryState.Saturation;
+
+    this.platform.log.info('Get Characteristic Saturation ->', saturation);
+
+    // if you need to return an error to show the device as "Not Responding" in the Home app:
+    // throw new this.platform.api.hap.HapStatusError(this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE);
+
+    return saturation;
   }
 
   /**
@@ -133,9 +156,34 @@ export class DMXLightPlatformAccessory {
    */
   async setBrightness(value: CharacteristicValue) {
     // implement your own code to set the brightness
-    this.exampleStates.Brightness = value as number;
+    this.accessoryState.Brightness = value as number;
+    // this.accessoryState.Brightness = this.getRandomArbitrary(0, 100);
+    // this.accessoryState.Hue = this.getRandomArbitrary(0, 360);
+    // this.accessoryState.Saturation = this.getRandomArbitrary(0, 100);
+    this.platform.log.info('Set Characteristic Brightness -> ', value);
 
-    this.platform.log.debug('Set Characteristic Brightness -> ', value);
+    this.dmxController.setHSB(this.startChannel, this.accessoryState.Hue, this.accessoryState.Saturation, this.accessoryState.Brightness);
   }
 
+  async setHue(value: CharacteristicValue) {
+    // implement your own code to set the brightness
+    this.accessoryState.Hue = value as number;
+
+    this.platform.log.info('Set Characteristic Hue -> ', value);
+
+    this.dmxController.setHSB(this.startChannel, this.accessoryState.Hue, this.accessoryState.Saturation, this.accessoryState.Brightness);
+  }
+
+  async setSaturation(value: CharacteristicValue) {
+    // implement your own code to set the brightness
+    this.accessoryState.Saturation = value as number;
+
+    this.platform.log.info('Set Characteristic Saturation -> ', value);
+
+    this.dmxController.setHSB(this.startChannel, this.accessoryState.Hue, this.accessoryState.Saturation, this.accessoryState.Brightness);
+  }
+
+  getRandomArbitrary(min, max) {
+    return Math.random() * (max - min) + min;
+  }
 }

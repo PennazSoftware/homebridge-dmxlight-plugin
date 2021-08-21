@@ -10,6 +10,35 @@
         "type": "string",
         "required": true,
         "default": "DMX Light"
+      },
+      "ipAddress": {
+        "title": "IP Address",
+        "type": "string",
+        "required": true,
+        "default": "192.168.1.2"
+      },
+      "serialPortName": {
+        "title": "Serial Port Name",
+        "type": "string",
+        "required": true,
+        "default": "/dev/ttyUSB0"
+      },
+      "dmxDriverName": {
+        "title": "DMX Driver Name",
+        "type": "string",
+        "required": true,
+        "default": "enttec-usb-dmx-pro",
+        "oneOf": [
+          { "title": "artnet", "enum": ["artnet"] },
+          { "title": "bbdmx", "enum": ["bbdmx"] },
+          { "title": "dmxking-ultra-dmx-pro", "enum": ["dmxking-ultra-dmx-pro"] },
+          { "title": "dmx4all", "enum": ["dmx4all"] },
+          { "title": "enttec-open-usb-dmx", "enum": ["enttec-open-usb-dmx"] },
+          { "title": "enttec-usb-dmx-pro", "enum": ["enttec-usb-dmx-pro"] },
+          { "title": "null", "enum": ["null"] },
+          { "title": "sacn", "enum": ["sacn"] },
+          { "title": "socketio", "enum": ["socketio"] }
+        ]
       }
     }
   }

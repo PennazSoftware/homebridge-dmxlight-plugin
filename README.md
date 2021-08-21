@@ -36,6 +36,10 @@ Using a terminal, navigate to the project folder and run this command to install
 npm install
 ```
 
+```
+npm install dmx
+```
+
 ## Update package.json
 
 Open the [`package.json`](./package.json) and change the following attributes:
@@ -79,6 +83,13 @@ You can now start Homebridge, use the `-D` flag so you can see debug log message
 ```
 homebridge -D
 ```
+
+On Raspberry Pi it may be necessary to stop and start the Homebridge service to pick up the latest plugin version.
+
+- Restart `sudo hb-service restart`
+- Stop `sudo hb-service stop`
+- Start `sudo hb-service start`
+- View Logs `sudo hb-service logs`
 
 ## Watch For Changes and Build Automatically
 
@@ -146,5 +157,4 @@ Users can then install the  *beta* version by appending `@beta` to the install c
 ```
 sudo npm install -g homebridge-example-plugin@beta
 ```
-
 

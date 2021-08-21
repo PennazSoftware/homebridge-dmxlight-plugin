@@ -1,0 +1,62 @@
+{
+    "bridge": {
+        "name": "Homebridge 1485",
+        "username": "0E:D7:34:15:14:85",
+        "port": 51624,
+        "pin": "633-73-978"
+    },
+    "accessories": [],
+    "platforms": [
+        {
+            "name": "Config",
+            "port": 8581,
+            "platform": "config"
+        },
+        {
+            "name": "DMXLight",
+            "platform": "DMXLightHomebridgePlugin",
+            "accessories": [
+                {
+                    "name": "Garage Left Flood",
+                    "id": "GLF",
+                    "dmxStartChannel": 1
+                },
+                {
+                    "name": "Garage Right Flood",
+                    "id": "GRF",
+                    "dmxStartChannel": 4
+                },
+                {
+                    "name": "Entry Left Flood",
+                    "id": "ELF",
+                    "dmxStartChannel": 7
+                },
+                {
+                    "name": "Entry Right Flood",
+                    "id": "ERF",
+                    "dmxStartChannel": 10
+                },
+                {
+                    "name": "Office Left Flood",
+                    "id": "OLF",
+                    "dmxStartChannel": 13
+                },
+                {
+                    "name": "Office Right Flood",
+                    "id": "ORF",
+                    "dmxStartChannel": 16
+                },
+                {
+                    "name": "Master Left Flood",
+                    "id": "MLF",
+                    "dmxStartChannel": 19
+                },
+                {
+                    "name": "Master Right Flood",
+                    "id": "MRF",
+                    "dmxStartChannel": 22
+                }
+            ]
+        }
+    ]
+}
