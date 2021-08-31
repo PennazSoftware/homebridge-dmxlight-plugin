@@ -22,16 +22,6 @@
         "type": "string",
         "required": true,
         "default": "/dev/ttyUSB0"
-      },
-      "dmxDriverName": {
-        "title": "DMX Driver Name",
-        "type": "string",
-        "required": true,
-        "default": "enttec-usb-dmx-pro",
-        "oneOf": [
-          { "title": "Enttec USB DMX PRO", "enum": ["enttec-usb-dmx-pro"] },
-          { "title": "Streaming ACN (E131)", "enum": ["sacn"] }
-        ]
       }
     }
   }
