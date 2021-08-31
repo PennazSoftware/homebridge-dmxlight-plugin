@@ -66,7 +66,8 @@ export class DMXLightHomebridgePlatform implements DynamicPlatformPlugin {
 
         // create the accessory handler for the restored accessory
         // this is imported from `platformAccessory.ts`
-        new DMXLightPlatformAccessory(this, existingAccessory, device.dmxStartChannel);
+        new DMXLightPlatformAccessory(this, existingAccessory, device.dmxStartChannel, device.dmxUniverse,
+          device.dmxChannelCount, device.driverName);
 
       } else {
         // the accessory does not yet exist, so we need to create it
@@ -81,7 +82,8 @@ export class DMXLightHomebridgePlatform implements DynamicPlatformPlugin {
 
         // create the accessory handler for the newly create accessory
         // this is imported from `platformAccessory.ts`
-        new DMXLightPlatformAccessory(this, accessory, device.dmxStartChannel);
+        new DMXLightPlatformAccessory(this, accessory, device.dmxStartChannel, device.dmxUniverse,
+          device.dmxChannelCount, device.driverName);
 
         // link the accessory to your platform
         this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
@@ -95,7 +97,6 @@ export class DMXLightHomebridgePlatform implements DynamicPlatformPlugin {
       name: this.config.name,
       ipAddress: this.config.ipAddress,
       serialPortName: this.config.serialPortName,
-      dmxDriverName: this.config.dmxDriverName,
       accessories: this.config.accessories,
     };
   }

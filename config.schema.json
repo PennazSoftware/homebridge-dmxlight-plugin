@@ -12,13 +12,13 @@
         "default": "DMX Light"
       },
       "ipAddress": {
-        "title": "IP Address",
+        "title": "IP Address (Streaming ACN only)",
         "type": "string",
         "required": true,
         "default": "192.168.1.2"
       },
       "serialPortName": {
-        "title": "Serial Port Name",
+        "title": "Serial Port Name (Enttec Pro only)",
         "type": "string",
         "required": true,
         "default": "/dev/ttyUSB0"
@@ -29,15 +29,8 @@
         "required": true,
         "default": "enttec-usb-dmx-pro",
         "oneOf": [
-          { "title": "artnet", "enum": ["artnet"] },
-          { "title": "bbdmx", "enum": ["bbdmx"] },
-          { "title": "dmxking-ultra-dmx-pro", "enum": ["dmxking-ultra-dmx-pro"] },
-          { "title": "dmx4all", "enum": ["dmx4all"] },
-          { "title": "enttec-open-usb-dmx", "enum": ["enttec-open-usb-dmx"] },
-          { "title": "enttec-usb-dmx-pro", "enum": ["enttec-usb-dmx-pro"] },
-          { "title": "null", "enum": ["null"] },
-          { "title": "sacn", "enum": ["sacn"] },
-          { "title": "socketio", "enum": ["socketio"] }
+          { "title": "Enttec USB DMX PRO", "enum": ["enttec-usb-dmx-pro"] },
+          { "title": "Streaming ACN (E131)", "enum": ["sacn"] }
         ]
       }
     }

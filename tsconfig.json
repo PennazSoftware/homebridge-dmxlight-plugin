@@ -15,12 +15,15 @@
     "rootDir": "./src",
     "strict": true,
     "esModuleInterop": true,
-    "noImplicitAny": false
-  },
-  "include": [
-    "src/"
-  ],
-  "exclude": [
-    "**/*.spec.ts"
-  ]
+    "noImplicitAny": false,
+    "typeRoots": [
+      "./src/localtypings"
+    ]
+    },
+    "include": [
+      "src/"
+    ],
+    "exclude": [
+      "**/*.spec.ts"
+    ]
 }

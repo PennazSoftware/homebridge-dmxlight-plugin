@@ -10,7 +10,10 @@ import { DmxController } from './dmx';
 export class DMXLightPlatformAccessory {
   private service: Service;
   private dmxController: DmxController;
+  private driverName: string;
   private startChannel: number;
+  private universeNumber: number;
+  private channelCount: number;
 
   /**
    * These are just used to create a working example
@@ -27,13 +30,19 @@ export class DMXLightPlatformAccessory {
     private readonly platform: DMXLightHomebridgePlatform,
     private readonly accessory: PlatformAccessory,
     startChannel: number,
+    universeNumber: number,
+    channelCount: number,
+    driverName: string,
   ) {
 
     const properties = this.platform.getConfigProperties();
     this.startChannel = startChannel;
+    this.universeNumber = universeNumber;
+    this.channelCount = channelCount;
+    this.driverName = driverName;
 
     // Create the DMX Controller object
-    this.dmxController = DmxController.getInstance(properties.serialPortName, properties.dmxDriverName, this.platform.log);
+    this.dmxController = DmxController.getInstance(properties.serialPortName, properties.ipAddress, this.platform.log);
 
     // set accessory information
     this.accessory.getService(this.platform.Service.AccessoryInformation)!
@@ -80,12 +89,12 @@ export class DMXLightPlatformAccessory {
     this.accessoryState.On = value as boolean;
 
     if (this.accessoryState.On) {
-      this.dmxController.setOn(this.startChannel);
+      this.dmxController.setOn(this.driverName, this.universeNumber, this.startChannel, this.channelCount);
     } else {
-      this.dmxController.setOff(this.startChannel);
+      this.dmxController.setOff(this.driverName, this.universeNumber, this.startChannel, this.channelCount);
     }
 
-    this.platform.log.info('Set Characteristic On ->', value);
+    //this.platform.log.info('Set Characteristic On ->', value);
   }
 
 
@@ -106,7 +115,7 @@ export class DMXLightPlatformAccessory {
     // implement your own code to check if the device is on
     const isOn = this.accessoryState.On;
 
-    this.platform.log.info('Get Characteristic On ->', isOn);
+    //this.platform.log.info('Get Characteristic On ->', isOn);
 
     // if you need to return an error to show the device as "Not Responding" in the Home app:
     // throw new this.platform.api.hap.HapStatusError(this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE);
@@ -118,7 +127,7 @@ export class DMXLightPlatformAccessory {
     // implement your own code to check if the device is on
     const brightness = this.accessoryState.Brightness;
 
-    this.platform.log.info('Get Characteristic Brightness ->', brightness);
+    //this.platform.log.info('Get Characteristic Brightness ->', brightness);
 
     // if you need to return an error to show the device as "Not Responding" in the Home app:
     // throw new this.platform.api.hap.HapStatusError(this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE);
@@ -130,7 +139,7 @@ export class DMXLightPlatformAccessory {
     // implement your own code to check if the device is on
     const hue = this.accessoryState.Hue;
 
-    this.platform.log.info('Get Characteristic Hue ->', hue);
+    //this.platform.log.info('Get Characteristic Hue ->', hue);
 
     // if you need to return an error to show the device as "Not Responding" in the Home app:
     // throw new this.platform.api.hap.HapStatusError(this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE);
@@ -142,7 +151,7 @@ export class DMXLightPlatformAccessory {
     // implement your own code to check if the device is on
     const saturation = this.accessoryState.Saturation;
 
-    this.platform.log.info('Get Characteristic Saturation ->', saturation);
+    //this.platform.log.info('Get Characteristic Saturation ->', saturation);
 
     // if you need to return an error to show the device as "Not Responding" in the Home app:
     // throw new this.platform.api.hap.HapStatusError(this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE);
@@ -157,30 +166,30 @@ export class DMXLightPlatformAccessory {
   async setBrightness(value: CharacteristicValue) {
     // implement your own code to set the brightness
     this.accessoryState.Brightness = value as number;
-    // this.accessoryState.Brightness = this.getRandomArbitrary(0, 100);
-    // this.accessoryState.Hue = this.getRandomArbitrary(0, 360);
-    // this.accessoryState.Saturation = this.getRandomArbitrary(0, 100);
-    this.platform.log.info('Set Characteristic Brightness -> ', value);
+    //this.platform.log.info('Set Characteristic Brightness -> ', value);
 
-    this.dmxController.setHSB(this.startChannel, this.accessoryState.Hue, this.accessoryState.Saturation, this.accessoryState.Brightness);
+    this.dmxController.setHSB(this.driverName, this.universeNumber, this.startChannel, this.channelCount, this.accessoryState.Hue,
+      this.accessoryState.Saturation, this.accessoryState.Brightness);
   }
 
   async setHue(value: CharacteristicValue) {
     // implement your own code to set the brightness
     this.accessoryState.Hue = value as number;
 
-    this.platform.log.info('Set Characteristic Hue -> ', value);
+    //this.platform.log.info('Set Characteristic Hue -> ', value);
 
-    this.dmxController.setHSB(this.startChannel, this.accessoryState.Hue, this.accessoryState.Saturation, this.accessoryState.Brightness);
+    this.dmxController.setHSB(this.driverName, this.universeNumber, this.startChannel, this.channelCount, this.accessoryState.Hue,
+      this.accessoryState.Saturation, this.accessoryState.Brightness);
   }
 
   async setSaturation(value: CharacteristicValue) {
     // implement your own code to set the brightness
     this.accessoryState.Saturation = value as number;
 
-    this.platform.log.info('Set Characteristic Saturation -> ', value);
+    //this.platform.log.info('Set Characteristic Saturation -> ', value);
 
-    this.dmxController.setHSB(this.startChannel, this.accessoryState.Hue, this.accessoryState.Saturation, this.accessoryState.Brightness);
+    this.dmxController.setHSB(this.driverName, this.universeNumber, this.startChannel, this.channelCount, this.accessoryState.Hue,
+      this.accessoryState.Saturation, this.accessoryState.Brightness);
   }
 
   getRandomArbitrary(min, max) {
