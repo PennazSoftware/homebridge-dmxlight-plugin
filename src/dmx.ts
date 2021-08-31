@@ -1,22 +1,22 @@
 //const DMX = require('dmx');     // include the dmx lib
 import { DMX, EnttecUSBDMXProDriver } from 'dmx-ts';
 import { Logger } from 'homebridge';
+import { Client } from 'e131';
 
 export class DmxController {
     private dmx: DMX;
     private log: Logger;
     private static instance: DmxController;
     private universeName = 'dmxLightUniverse';
+    private sacnClient: Client;
+    private sacnSlotsData: unknown;
 
     // Constructor
-    private constructor(serialPort: string, dmxDriverName: string, log: Logger) {
-      // Create DMX instance
-      this.dmx = new DMX();
+    private constructor(serialPort: string, ipAddress: string, log: Logger) {
       this.log = log;
 
-      log.info('creating DMX universe with driver named ' + dmxDriverName + ' on serial port ' + serialPort);
-
-      // Add the universe
+      // Configure Enttec Pro
+      this.dmx = new DMX();
       this.dmx.addUniverse(this.universeName, new EnttecUSBDMXProDriver(serialPort))
         .then(() => {
           log.info('successfully added universe');
@@ -25,59 +25,105 @@ export class DmxController {
           log.error('error adding universe: ' + err);
         } );
 
-      this.dmx.updateAll(this.universeName, 0);
+      // Configure Streaming ACN
+      this.sacnClient = new Client(ipAddress);
     }
 
-    public static getInstance(serialPort: string, dmxDriverName: string, log: Logger): DmxController {
+    public static getInstance(serialPort: string, ipAddress: string, log: Logger): DmxController {
       if (!DmxController.instance) {
-        DmxController.instance = new DmxController(serialPort, dmxDriverName, log);
+        DmxController.instance = new DmxController(serialPort, ipAddress, log);
       }
 
       return DmxController.instance;
     }
 
-    setOn(startChannel: number) {
-      this.log.info('setting channels ' + startChannel + '-' + (startChannel+2) + ' on');
-      const channel = { [startChannel]: 255, [startChannel+1]: 255, [startChannel+2]: 255 };
-      this.dmx.update(this.universeName, channel);
+    setOn(driverName: string, universeNumber: number, startChannel: number, channelCount: number) {
+      this.log.info('Set On (Universe #' + universeNumber + ', Channels #' + startChannel + '-' + (startChannel + channelCount) + ')');
+
+      switch (driverName) {
+        case 'enttec-usb-dmx-pro':
+          this.log.info('setting channels ' + startChannel + '-' + (startChannel+2) + ' on');
+          // eslint-disable-next-line no-case-declarations
+          const channel = { [startChannel]: 255, [startChannel+1]: 255, [startChannel+2]: 255 };
+          this.dmx.update(this.universeName, channel);
+          break;
+        case 'sacn':
+          this.setSacnColor(universeNumber, startChannel, channelCount, 255, 255, 255);
+          break;
+      }
     }
 
-    setOff(startChannel: number) {
-      this.log.info('setting channels ' + startChannel + '-' + (startChannel+2) + ' off');
-      const channel = { [startChannel]: 0, [startChannel+1]: 0, [startChannel+2]: 0 };
-      this.dmx.update(this.universeName, channel);
+    setOff(driverName: string, universeNumber: number, startChannel: number, channelCount: number) {
+      this.log.info('Set Off (Universe #' + universeNumber + ', Channels #' + startChannel + '-' + (startChannel + channelCount) + ')');
+
+      switch (driverName) {
+        case 'enttec-usb-dmx-pro':
+          // eslint-disable-next-line no-case-declarations
+          const channel = { [startChannel]: 0, [startChannel+1]: 0, [startChannel+2]: 0 };
+          this.dmx.update(this.universeName, channel);
+          break;
+        case 'sacn':
+          this.setSacnColor(universeNumber, startChannel, channelCount, 0, 0, 0);
+          break;
+      }
+
+
     }
 
-    setHSB(startChannel: number, hue: number, saturation: number, brightness: number) {
+    setSacnColor(universeNumber: number, startChannel: number, channelCount: number, r: number, g: number, b: number) {
+      const sacnPacket = this.sacnClient.createPacket(channelCount + startChannel);
+      sacnPacket.setSourceName('DMXLightPlugin');
+      sacnPacket.setUniverse(universeNumber);
+      const sacnSlotsData = sacnPacket.getSlotsData();
+      sacnPacket.setSourceName('RemotePixel');
+      sacnPacket.setUniverse(universeNumber);
+
+      let p = 1;
+      for (let idx = startChannel-1; idx < sacnSlotsData.length; idx++) {
+        switch (p) {
+          case 1:
+            sacnSlotsData[idx] = r;
+            break;
+          case 2:
+            sacnSlotsData[idx] = g;
+            break;
+          case 3:
+            sacnSlotsData[idx] = b;
+            break;
+        }
+
+        p++;
+        if (p > 3) {
+          p = 1;
+        }
+      }
+
+      this.sacnClient.send(sacnPacket);
+    }
+
+    setHSB(driverName: string, universeNumber: number, startChannel: number, channelCount: number, hue: number,
+      saturation: number, brightness: number) {
       const rgb = this.HSVtoRGB(hue/360, saturation/100, brightness/100);
+      //this.log.info('setting channels ' + startChannel + '-' + (startChannel+2) + ' to ' + rgb.r + '/' + rgb.g + '/' + rgb.b);
+      this.log.info('Set Color: HSV=' + hue/360 + '/' + saturation/100 + '/' + brightness/100 + ', RGB=' + rgb.r + '/' +
+      rgb.g + '/' + rgb.b + ' (Universe #' + universeNumber + ', Channels #' + startChannel + '-' + (startChannel + channelCount) + ')');
 
-      this.log.info('setting channels ' + startChannel + '-' + (startChannel+2) + ' to ' + rgb.r + '/' + rgb.g + '/' + rgb.b);
+      switch (driverName) {
+        case 'enttec-usb-dmx-pro':
+          // eslint-disable-next-line no-case-declarations
+          let channel = { [startChannel]: rgb.r};
+          this.dmx.update(this.universeName, channel);
 
-      //const channel = { [startChannel]: rgb[0], [startChannel+1]: rgb[1], [startChannel+2]: rgb[2] };
-      let channel = { [startChannel]: rgb.r};
-      this.dmx.update(this.universeName, channel);
+          channel = { [startChannel+1]: rgb.g};
+          this.dmx.update(this.universeName, channel);
 
-      channel = { [startChannel+1]: rgb.g};
-      this.dmx.update(this.universeName, channel);
-
-      channel = { [startChannel+2]: rgb.b};
-      this.dmx.update(this.universeName, channel);
-
-    }
-
-    // quit ensures that everything is turned off
-    quit(error) {
-      if (error) {
-        this.log.error('Uncaught Exception: ' + error.stack);
+          channel = { [startChannel+2]: rgb.b};
+          this.dmx.update(this.universeName, channel);
+          break;
+        case 'sacn':
+          this.setSacnColor(universeNumber, startChannel, channelCount, rgb.r, rgb.g, rgb.b);
+          break;
       }
-      this.log.info('Turning off all DMX Light channels...');
-      for (let c = 0; c < 256; c++) {
-        const channel = { [c]: 0 };       // make an object
-        this.dmx.update(this.universeName, channel); // set channel to 0
-      }
-      // after 0.5 second, quit
-      // (allows plenty of time for sending final blackout data):
-      setTimeout(process.exit, 500);
     }
 
     private HSVtoRGB(h: number, s: number, v: number) {

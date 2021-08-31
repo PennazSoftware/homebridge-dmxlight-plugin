@@ -1,0 +1,90 @@
+{
+    "bridge": {
+        "name": "Homebridge 1485",
+        "username": "0E:D7:34:15:14:85",
+        "port": 51624,
+        "pin": "633-73-978"
+    },
+    "accessories": [],
+    "platforms": [
+        {
+            "name": "Config",
+            "port": 8581,
+            "platform": "config"
+        },
+        {
+            "name": "DMX Light",
+            "ipAddress": "192.168.1.73",
+            "serialPortName": "/dev/ttyUSB0",
+            "platform": "homebridge-dmxlight-plugin.DMXLighteHomebridgePlugin",
+            "accessories": [
+                {
+                    "name": "Garage Left Flood",
+                    "id": "GLF",
+                    "driverName": "enttec-usb-dmx-pro",
+                    "dmxStartChannel": 1,
+                    "dmxChannelCount": 1,
+                    "dmxUniverse": 1
+                },
+                {
+                    "name": "Garage Right Flood",
+                    "id": "GRF",
+                    "driverName": "enttec-usb-dmx-pro",
+                    "dmxStartChannel": 4,
+                    "dmxChannelCount": 1,
+                    "dmxUniverse": 1                },
+                {
+                    "name": "Entry Left Flood",
+                    "id": "ELF",
+                    "driverName": "enttec-usb-dmx-pro",
+                    "dmxStartChannel": 7,
+                    "dmxChannelCount": 1,
+                    "dmxUniverse": 1                },
+                {
+                    "name": "Entry Right Flood",
+                    "id": "ERF",
+                    "driverName": "enttec-usb-dmx-pro",
+                    "dmxStartChannel": 10,
+                    "dmxChannelCount": 1,
+                    "dmxUniverse": 1                },
+                {
+                    "name": "Office Left Flood",
+                    "id": "OLF",
+                    "driverName": "enttec-usb-dmx-pro",
+                    "dmxStartChannel": 13,
+                    "dmxChannelCount": 1,
+                    "dmxUniverse": 1                },
+                {
+                    "name": "Office Right Flood",
+                    "id": "ORF",
+                    "driverName": "enttec-usb-dmx-pro",
+                    "dmxStartChannel": 16,
+                    "dmxChannelCount": 1,
+                    "dmxUniverse": 1                },
+                {
+                    "name": "Master Left Flood",
+                    "id": "MLF",
+                    "driverName": "enttec-usb-dmx-pro",
+                    "dmxStartChannel": 19,
+                    "dmxChannelCount": 1,
+                    "dmxUniverse": 1                },
+                {
+                    "name": "Master Right Flood",
+                    "id": "MRF",
+                    "driverName": "enttec-usb-dmx-pro",
+                    "dmxStartChannel": 22,
+                    "dmxChannelCount": 1,
+                    "dmxUniverse": 1                
+                },
+                {
+                    "name": "Test Bullets",
+                    "id": "TB",
+                    "driverName": "sacn",
+                    "dmxStartChannel": 1,
+                    "dmxChannelCount": 100,
+                    "dmxUniverse": 130                
+                }
+            ]
+        }
+    ]
+}
