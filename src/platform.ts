@@ -107,11 +107,7 @@ export class DMXLightHomebridgePlatform implements DynamicPlatformPlugin {
     return properties;
   }
 
-  isIterable(obj) {
-    // checks for null and undefined
-    if (obj === null) {
-      return false;
-    }
-    return typeof obj[Symbol.iterator] === 'function';
+  isIterable(value: unknown) {
+    return Symbol.iterator in Object(value);
   }
 }
