@@ -53,11 +53,11 @@ export class DMXLightHomebridgePlatform implements DynamicPlatformPlugin {
     // loop over the discovered devices and register each one if it has not already been registered
     for (const device of properties.accessories) {
 
-      let colorOrder = device.colorOrder;
-      if (colorOrder === '') {
+      let colorOrder = device.colorOrder + '';
+      if (colorOrder === '' || colorOrder === null) {
         colorOrder = 'rgb';
       }
-      colorOrder = colorOrder.toLowerCase;
+      colorOrder = colorOrder.toLocaleLowerCase();
 
       if (colorOrder.length !== 3) {
         this.log.info('An unsupported color order was found. Now using default of "rgb".');
@@ -104,10 +104,11 @@ export class DMXLightHomebridgePlatform implements DynamicPlatformPlugin {
 
   // Get the config properties
   getConfigProperties() {
+
     const properties = {
-      name: this.config.name?.trim(),
-      ipAddress: this.config.ipAddress.trim(),
-      serialPortName: this.config.serialPortName.trim(),
+      name: this.config.name?.toString().trim(),
+      ipAddress: this.config.ipAddress.toString().trim(),
+      serialPortName: this.config.serialPortName.toString().trim(),
       accessories: this.config.accessories,
     };
 

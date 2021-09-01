@@ -45,7 +45,7 @@ export class DmxController {
     }
 
     setOn(driverName: string, universeNumber: number, startChannel: number, channelCount: number) {
-      this.log.info('Set On (Universe #' + universeNumber + ', Channels #' + startChannel + '-' + (startChannel + channelCount) + ')');
+      this.log.info('Set On (Universe #' + universeNumber + ', Channels #' + startChannel + '-' + (startChannel + channelCount - 1) + ')');
 
       switch (driverName) {
         case 'enttec-usb-dmx-pro':
@@ -61,7 +61,7 @@ export class DmxController {
     }
 
     setOff(driverName: string, universeNumber: number, startChannel: number, channelCount: number) {
-      this.log.info('Set Off (Universe #' + universeNumber + ', Channels #' + startChannel + '-' + (startChannel + channelCount) + ')');
+      this.log.info('Set Off (Universe #' + universeNumber + ', Channels #' + startChannel + '-' + (startChannel + channelCount - 1) + ')');
 
       switch (driverName) {
         case 'enttec-usb-dmx-pro':
@@ -113,10 +113,11 @@ export class DmxController {
       const rgb = this.HSVtoRGB(hue/360, saturation/100, brightness/100);
       //this.log.info('setting channels ' + startChannel + '-' + (startChannel+2) + ' to ' + rgb.r + '/' + rgb.g + '/' + rgb.b);
       this.log.info('Set Color: HSV=' + hue/360 + '/' + saturation/100 + '/' + brightness/100 + ', RGB=' + rgb.r + '/' +
-      rgb.g + '/' + rgb.b + ' (Universe #' + universeNumber + ', Channels #' + startChannel + '-' + (startChannel + channelCount) + ')');
+      rgb.g + '/' + rgb.b + ' (Universe #' + universeNumber + ', Channels #' + startChannel + '-' + (startChannel +
+        channelCount - 1) + ')');
 
       // Remap colors if necessary
-      const colors: number[] = [ ];
+      const colors: number[] = [ rgb.r, rgb.g, rgb.b ];
 
       if (colorOrder !== 'rgb') {
         for (let i = 0; i < colorOrder.length; i++) {
