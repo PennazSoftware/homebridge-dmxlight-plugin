@@ -17,16 +17,23 @@ export class DmxController {
 
       // Configure Enttec Pro
       this.dmx = new DMX();
-      this.dmx.addUniverse(this.universeName, new EnttecUSBDMXProDriver(serialPort))
-        .then(() => {
-          log.info('successfully added universe');
-        })
-        .catch((err) => {
-          log.error('error adding universe: ' + err);
-        } );
+
+      if (serialPort !== '') {
+        this.dmx.addUniverse(this.universeName, new EnttecUSBDMXProDriver(serialPort))
+          .then(() => {
+            log.info('successfully added universe');
+          })
+          .catch((err) => {
+            log.error('error adding universe: ' + err);
+          } );
+      }
 
       // Configure Streaming ACN
-      this.sacnClient = new Client(ipAddress);
+      if (ipAddress !== '') {
+        this.sacnClient = new Client(ipAddress);
+      } else {
+        this.sacnClient = new Client('localhost');
+      }
     }
 
     public static getInstance(serialPort: string, ipAddress: string, log: Logger): DmxController {

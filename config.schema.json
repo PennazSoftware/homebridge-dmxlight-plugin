@@ -15,13 +15,13 @@
         "title": "IP Address (Streaming ACN only)",
         "type": "string",
         "required": true,
-        "default": "192.168.1.2"
+        "default": ""
       },
       "serialPortName": {
         "title": "Serial Port Name (Enttec Pro only)",
         "type": "string",
         "required": true,
-        "default": "/dev/ttyUSB0"
+        "default": ""
       }
     }
   }
