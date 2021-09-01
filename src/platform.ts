@@ -105,10 +105,25 @@ export class DMXLightHomebridgePlatform implements DynamicPlatformPlugin {
   // Get the config properties
   getConfigProperties() {
 
+    let ipAddress = this.config.ipAddress;
+
+    if (ipAddress === null || ipAddress === undefined) {
+      ipAddress = '';
+    } else {
+      ipAddress = (ipAddress + '').trim();
+    }
+
+    let serialPort = this.config.serialPort;
+    if (serialPort === null || serialPort === undefined) {
+      serialPort = '';
+    } else {
+      serialPort = (serialPort + '').trim();
+    }
+
     const properties = {
       name: this.config.name?.toString().trim(),
-      ipAddress: this.config.ipAddress.toString().trim(),
-      serialPortName: this.config.serialPortName.toString().trim(),
+      ipAddress: ipAddress,
+      serialPortName: serialPort,
       accessories: this.config.accessories,
     };
 
