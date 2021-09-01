@@ -18,7 +18,7 @@ export class DmxController {
       // Configure Enttec Pro
       this.dmx = new DMX();
 
-      if (serialPort !== '') {
+      if (serialPort !== null && serialPort !== '') {
         this.dmx.addUniverse(this.universeName, new EnttecUSBDMXProDriver(serialPort))
           .then(() => {
             log.info('successfully added universe');
