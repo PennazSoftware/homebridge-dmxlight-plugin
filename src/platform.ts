@@ -53,6 +53,17 @@ export class DMXLightHomebridgePlatform implements DynamicPlatformPlugin {
     // loop over the discovered devices and register each one if it has not already been registered
     for (const device of properties.accessories) {
 
+      let colorOrder = device.colorOrder;
+      if (colorOrder === '') {
+        colorOrder = 'rgb';
+      }
+      colorOrder = colorOrder.toLowerCase;
+
+      if (colorOrder.length !== 3) {
+        this.log.info('An unsupported color order was found. Now using default of "rgb".');
+        colorOrder = 'rgb';
+      }
+
       // generate a unique id for the accessory
       const uuid = this.api.hap.uuid.generate(device.id);
 
@@ -67,7 +78,7 @@ export class DMXLightHomebridgePlatform implements DynamicPlatformPlugin {
         // create the accessory handler for the restored accessory
         // this is imported from `platformAccessory.ts`
         new DMXLightPlatformAccessory(this, existingAccessory, device.dmxStartChannel, device.dmxUniverse,
-          device.dmxChannelCount, device.driverName);
+          device.dmxChannelCount, device.driverName, colorOrder);
 
       } else {
         // the accessory does not yet exist, so we need to create it
@@ -83,7 +94,7 @@ export class DMXLightHomebridgePlatform implements DynamicPlatformPlugin {
         // create the accessory handler for the newly create accessory
         // this is imported from `platformAccessory.ts`
         new DMXLightPlatformAccessory(this, accessory, device.dmxStartChannel, device.dmxUniverse,
-          device.dmxChannelCount, device.driverName);
+          device.dmxChannelCount, device.driverName, colorOrder);
 
         // link the accessory to your platform
         this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
@@ -94,9 +105,9 @@ export class DMXLightHomebridgePlatform implements DynamicPlatformPlugin {
   // Get the config properties
   getConfigProperties() {
     const properties = {
-      name: this.config.name,
-      ipAddress: this.config.ipAddress,
-      serialPortName: this.config.serialPortName,
+      name: this.config.name?.trim(),
+      ipAddress: this.config.ipAddress.trim(),
+      serialPortName: this.config.serialPortName.trim(),
       accessories: this.config.accessories,
     };
 

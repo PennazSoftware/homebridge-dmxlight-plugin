@@ -14,6 +14,7 @@ export class DMXLightPlatformAccessory {
   private startChannel: number;
   private universeNumber: number;
   private channelCount: number;
+  private colorOrder: string;
 
   /**
    * These are just used to create a working example
@@ -33,6 +34,7 @@ export class DMXLightPlatformAccessory {
     universeNumber: number,
     channelCount: number,
     driverName: string,
+    colorOrder: string,
   ) {
 
     const properties = this.platform.getConfigProperties();
@@ -40,6 +42,7 @@ export class DMXLightPlatformAccessory {
     this.universeNumber = universeNumber;
     this.channelCount = channelCount;
     this.driverName = driverName;
+    this.colorOrder = colorOrder;
 
     // Create the DMX Controller object
     this.dmxController = DmxController.getInstance(properties.serialPortName, properties.ipAddress, this.platform.log);
@@ -168,8 +171,8 @@ export class DMXLightPlatformAccessory {
     this.accessoryState.Brightness = value as number;
     //this.platform.log.info('Set Characteristic Brightness -> ', value);
 
-    this.dmxController.setHSB(this.driverName, this.universeNumber, this.startChannel, this.channelCount, this.accessoryState.Hue,
-      this.accessoryState.Saturation, this.accessoryState.Brightness);
+    this.dmxController.setHSB(this.driverName, this.universeNumber, this.startChannel, this.channelCount, this.colorOrder,
+      this.accessoryState.Hue, this.accessoryState.Saturation, this.accessoryState.Brightness);
   }
 
   async setHue(value: CharacteristicValue) {
@@ -178,8 +181,8 @@ export class DMXLightPlatformAccessory {
 
     //this.platform.log.info('Set Characteristic Hue -> ', value);
 
-    this.dmxController.setHSB(this.driverName, this.universeNumber, this.startChannel, this.channelCount, this.accessoryState.Hue,
-      this.accessoryState.Saturation, this.accessoryState.Brightness);
+    this.dmxController.setHSB(this.driverName, this.universeNumber, this.startChannel, this.channelCount, this.colorOrder,
+      this.accessoryState.Hue, this.accessoryState.Saturation, this.accessoryState.Brightness);
   }
 
   async setSaturation(value: CharacteristicValue) {
@@ -188,8 +191,8 @@ export class DMXLightPlatformAccessory {
 
     //this.platform.log.info('Set Characteristic Saturation -> ', value);
 
-    this.dmxController.setHSB(this.driverName, this.universeNumber, this.startChannel, this.channelCount, this.accessoryState.Hue,
-      this.accessoryState.Saturation, this.accessoryState.Brightness);
+    this.dmxController.setHSB(this.driverName, this.universeNumber, this.startChannel, this.channelCount, this.colorOrder,
+      this.accessoryState.Hue, this.accessoryState.Saturation, this.accessoryState.Brightness);
   }
 
   getRandomArbitrary(min, max) {

@@ -24,7 +24,8 @@
                     "driverName": "sacn",
                     "dmxStartChannel": 1,
                     "dmxChannelCount": 100,
-                    "dmxUniverse": 130                
+                    "dmxUniverse": 130,
+                    "colorOrder": "rgb"               
                 }
             ]
         }

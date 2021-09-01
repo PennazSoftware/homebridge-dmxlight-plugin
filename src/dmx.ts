@@ -108,27 +108,46 @@ export class DmxController {
       this.sacnClient.send(sacnPacket);
     }
 
-    setHSB(driverName: string, universeNumber: number, startChannel: number, channelCount: number, hue: number,
-      saturation: number, brightness: number) {
+    setHSB(driverName: string, universeNumber: number, startChannel: number, channelCount: number, colorOrder: string,
+      hue: number, saturation: number, brightness: number) {
       const rgb = this.HSVtoRGB(hue/360, saturation/100, brightness/100);
       //this.log.info('setting channels ' + startChannel + '-' + (startChannel+2) + ' to ' + rgb.r + '/' + rgb.g + '/' + rgb.b);
       this.log.info('Set Color: HSV=' + hue/360 + '/' + saturation/100 + '/' + brightness/100 + ', RGB=' + rgb.r + '/' +
       rgb.g + '/' + rgb.b + ' (Universe #' + universeNumber + ', Channels #' + startChannel + '-' + (startChannel + channelCount) + ')');
 
+      // Remap colors if necessary
+      const colors: number[] = [ ];
+
+      if (colorOrder !== 'rgb') {
+        for (let i = 0; i < colorOrder.length; i++) {
+          switch (colorOrder[i]) {
+            case 'r':
+              colors[i] = rgb.r;
+              break;
+            case 'g':
+              colors[i] = rgb.g;
+              break;
+            case 'b':
+              colors[i] = rgb.b;
+              break;
+          }
+        }
+      }
+
       switch (driverName) {
         case 'enttec-usb-dmx-pro':
           // eslint-disable-next-line no-case-declarations
-          let channel = { [startChannel]: rgb.r};
+          let channel = { [startChannel]: colors[0]};
           this.dmx.update(this.universeName, channel);
 
-          channel = { [startChannel+1]: rgb.g};
+          channel = { [startChannel+1]: colors[1]};
           this.dmx.update(this.universeName, channel);
 
-          channel = { [startChannel+2]: rgb.b};
+          channel = { [startChannel+2]: colors[2]};
           this.dmx.update(this.universeName, channel);
           break;
         case 'sacn':
-          this.setSacnColor(universeNumber, startChannel, channelCount, rgb.r, rgb.g, rgb.b);
+          this.setSacnColor(universeNumber, startChannel, channelCount, colors[0], colors[1], colors[2]);
           break;
       }
     }

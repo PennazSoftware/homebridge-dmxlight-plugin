@@ -24,7 +24,8 @@
                     "driverName": "enttec-usb-dmx-pro",
                     "dmxStartChannel": 1,
                     "dmxChannelCount": 1,
-                    "dmxUniverse": 1
+                    "dmxUniverse": 1,
+                    "colorOrder": "rgb"
                 },
                 {
                     "name": "Garage Right Flood",
@@ -32,49 +33,62 @@
                     "driverName": "enttec-usb-dmx-pro",
                     "dmxStartChannel": 4,
                     "dmxChannelCount": 1,
-                    "dmxUniverse": 1                },
+                    "dmxUniverse": 1,
+                    "colorOrder": "rgb"
+                },
                 {
                     "name": "Entry Left Flood",
                     "id": "ELF",
                     "driverName": "enttec-usb-dmx-pro",
                     "dmxStartChannel": 7,
                     "dmxChannelCount": 1,
-                    "dmxUniverse": 1                },
+                    "dmxUniverse": 1,
+                    "colorOrder": "rgb"
+                },
                 {
                     "name": "Entry Right Flood",
                     "id": "ERF",
                     "driverName": "enttec-usb-dmx-pro",
                     "dmxStartChannel": 10,
                     "dmxChannelCount": 1,
-                    "dmxUniverse": 1                },
+                    "dmxUniverse": 1,
+                    "colorOrder": "rgb"
+                    },
                 {
                     "name": "Office Left Flood",
                     "id": "OLF",
                     "driverName": "enttec-usb-dmx-pro",
                     "dmxStartChannel": 13,
                     "dmxChannelCount": 1,
-                    "dmxUniverse": 1                },
+                    "dmxUniverse": 1,
+                    "colorOrder": "rgb"
+                },
                 {
                     "name": "Office Right Flood",
                     "id": "ORF",
                     "driverName": "enttec-usb-dmx-pro",
                     "dmxStartChannel": 16,
                     "dmxChannelCount": 1,
-                    "dmxUniverse": 1                },
+                    "dmxUniverse": 1,
+                    "colorOrder": "rgb"
+                },
                 {
                     "name": "Master Left Flood",
                     "id": "MLF",
                     "driverName": "enttec-usb-dmx-pro",
                     "dmxStartChannel": 19,
                     "dmxChannelCount": 1,
-                    "dmxUniverse": 1                },
+                    "dmxUniverse": 1,
+                    "colorOrder": "rgb"
+                },
                 {
                     "name": "Master Right Flood",
                     "id": "MRF",
                     "driverName": "enttec-usb-dmx-pro",
                     "dmxStartChannel": 22,
                     "dmxChannelCount": 1,
-                    "dmxUniverse": 1                
+                    "dmxUniverse": 1,
+                    "colorOrder": "rgb"                
                 },
                 {
                     "name": "Test Bullets",
@@ -82,7 +96,8 @@
                     "driverName": "sacn",
                     "dmxStartChannel": 1,
                     "dmxChannelCount": 100,
-                    "dmxUniverse": 130                
+                    "dmxUniverse": 130,
+                    "colorOrder": "rgb"                
                 }
             ]
         }

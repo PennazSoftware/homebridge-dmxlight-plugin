@@ -54,7 +54,8 @@ In order to configure accessories (i.e., lights, light strands, etc.) you need t
                     "driverName": "enttec-usb-dmx-pro",
                     "dmxStartChannel": 1,
                     "dmxChannelCount": 1,
-                    "dmxUniverse": 1
+                    "dmxUniverse": 1,
+                    "colorOrder": "rgb"
                 },
                 {
                     "name": "House Outline",
@@ -62,7 +63,8 @@ In order to configure accessories (i.e., lights, light strands, etc.) you need t
                     "driverName": "sacn",
                     "dmxStartChannel": 1,
                     "dmxChannelCount": 100,
-                    "dmxUniverse": 130
+                    "dmxUniverse": 130,
+                    "colorOrder": "bgr"
                 }
             ]
         }
@@ -86,4 +88,7 @@ In order to configure accessories (i.e., lights, light strands, etc.) you need t
 - dmxStartChannel: The first channel associated within the universe.
 
 - dmxChannelCount: The number of channels within the universe to control. For a single light, specify 1. If you are controlling a light strand with 100 lights then specify 100.
+
+- colorOrder: The order of RGB colors. Normally, lights are ordered in RGB (red, green and then blue). If the lights are in a different order then specify their order here. If not specified, the default is 'RGB'.
+
 
