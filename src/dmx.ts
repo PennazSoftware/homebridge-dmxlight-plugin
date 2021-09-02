@@ -18,16 +18,14 @@ export class DmxController {
       // Configure Enttec Pro
       this.dmx = new DMX();
 
-      log.info('serialPort: ' + serialPort);
       if (serialPort !== null && serialPort !== '') {
         this.dmx.addUniverse(this.universeName, new EnttecUSBDMXProDriver(serialPort))
           .then(() => {
-            log.info('successfully added universe');
+            log.info('successfully added universe for Enttec Pro');
           })
           .catch((err) => {
-            log.error('error adding universe: ' + err);
+            log.error('error adding universe for Enttec Pro: ' + err);
           } );
-        log.info('config done');
       }
 
       // Configure Streaming ACN
