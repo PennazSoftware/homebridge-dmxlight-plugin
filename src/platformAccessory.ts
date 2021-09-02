@@ -92,7 +92,8 @@ export class DMXLightPlatformAccessory {
     this.accessoryState.On = value as boolean;
 
     if (this.accessoryState.On) {
-      this.dmxController.setOn(this.driverName, this.universeNumber, this.startChannel, this.channelCount);
+      this.dmxController.setOn(this.driverName, this.universeNumber, this.startChannel, this.channelCount, this.colorOrder,
+        this.accessoryState.Hue, this.accessoryState.Saturation, this.accessoryState.Brightness);
     } else {
       this.dmxController.setOff(this.driverName, this.universeNumber, this.startChannel, this.channelCount);
     }
