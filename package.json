@@ -2,7 +2,7 @@
   "private": false,
   "displayName": "DMX Light",
   "name": "homebridge-dmxlight-plugin",
-  "version": "1.1.11",
+  "version": "1.1.16",
   "description": "A Homebridge plugin for controlling lights via DMX.",
   "license": "Apache-2.0",
   "repository": {
@@ -21,7 +21,8 @@
     "lint": "eslint src/**.ts --max-warnings=0",
     "watch": "npm run build && npm link && nodemon",
     "build": "rimraf ./dist && tsc",
-    "prepublishOnly": "npm run lint && npm run build"
+    "prepublishOnly": "npm run lint && npm run build",
+    "rimraf": "./node_modules/rimraf/bin.js"
   },
   "keywords": [
     "homebridge-plugin",

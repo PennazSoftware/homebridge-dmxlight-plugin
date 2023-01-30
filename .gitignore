@@ -118,3 +118,6 @@ dist
 .yarn/unplugged
 .yarn/build-state.yml
 .pnp.*
+
+# Ignore VS Code settings
+.DS_Store

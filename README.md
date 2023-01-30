@@ -92,3 +92,8 @@ In order to configure accessories (i.e., lights, light strands, etc.) you need t
 - colorOrder: The order of RGB colors. Normally, lights are ordered in RGB (red, green and then blue). If the lights are in a different order then specify their order here. If not specified, the default is 'RGB'.
 
 
+## Revision History
+
+### 1.1.16 (Jan 30, 2023)
+
+  - Fixed issue where multiple accessories using the same univserse were overwriting each others commands
