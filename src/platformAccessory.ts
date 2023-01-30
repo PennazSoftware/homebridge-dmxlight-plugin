@@ -44,8 +44,9 @@ export class DMXLightPlatformAccessory {
     this.driverName = driverName;
     this.colorOrder = colorOrder;
 
-    // Create the DMX Controller object
-    this.dmxController = DmxController.getInstance(properties.serialPortName, properties.ipAddress, this.platform.log);
+    // Create the DMX Controller object and initialize it
+    this.dmxController = DmxController.getInstance(properties.serialPortName, properties.ipAddress,
+      universeNumber, driverName, this.platform.log);
 
     // set accessory information
     this.accessory.getService(this.platform.Service.AccessoryInformation)!

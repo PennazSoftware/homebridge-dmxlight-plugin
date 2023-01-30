@@ -2,6 +2,7 @@
 import { DMX, EnttecUSBDMXProDriver } from 'dmx-ts';
 import { Logger } from 'homebridge';
 import { Client } from 'e131';
+import { SacnUniverse } from './sacnUniverse';
 
 export class DmxController {
     private dmx: DMX;
@@ -9,10 +10,10 @@ export class DmxController {
     private static instance: DmxController;
     private universeName = 'dmxLightUniverse';
     private sacnClient: Client;
-    private sacnSlotsData: unknown;
+    private sacnUniverseMap: { [id: number]: SacnUniverse } = {};
 
     // Constructor
-    private constructor(serialPort: string, ipAddress: string, log: Logger) {
+    private constructor(serialPort: string, ipAddress: string, universe: number, driverName: string, log: Logger) {
       this.log = log;
 
       // Configure Enttec Pro
@@ -34,11 +35,17 @@ export class DmxController {
       } else {
         this.sacnClient = new Client('localhost');
       }
+
     }
 
-    public static getInstance(serialPort: string, ipAddress: string, log: Logger): DmxController {
+    public static getInstance(serialPort: string, ipAddress: string, universe: number, driverName: string, log: Logger): DmxController {
       if (!DmxController.instance) {
-        DmxController.instance = new DmxController(serialPort, ipAddress, log);
+        DmxController.instance = new DmxController(serialPort, ipAddress, universe, driverName, log);
+      }
+
+      // Initialize SACN Universe if necessary
+      if (driverName === 'sacn') {
+        DmxController.instance.sacnUniverseMap[universe] = new SacnUniverse(DmxController.instance.sacnClient, universe, log);
       }
 
       return DmxController.instance;
@@ -123,24 +130,20 @@ export class DmxController {
     }
 
     private setSacnColor(universeNumber: number, startChannel: number, channelCount: number, r: number, g: number, b: number) {
-      const sacnPacket = this.sacnClient.createPacket(channelCount + startChannel - 1);
-      sacnPacket.setSourceName('DMXLightPlugin');
-      sacnPacket.setUniverse(universeNumber);
-      const sacnSlotsData = sacnPacket.getSlotsData();
-      sacnPacket.setSourceName('RemotePixel');
-      sacnPacket.setUniverse(universeNumber);
+      const endChannel = startChannel-1 + channelCount-1;
+      this.log.info('Updating slots buffer from ' + (startChannel-1) + ' - ' + endChannel);
 
       let p = 1;
-      for (let idx = startChannel-1; idx < sacnSlotsData.length; idx++) {
+      for (let idx = startChannel-1; idx <= endChannel; idx++) {
         switch (p) {
           case 1:
-            sacnSlotsData[idx] = r;
+            this.sacnUniverseMap[universeNumber].sacnSlotsData[idx] = r;
             break;
           case 2:
-            sacnSlotsData[idx] = g;
+            this.sacnUniverseMap[universeNumber].sacnSlotsData[idx] = g;
             break;
           case 3:
-            sacnSlotsData[idx] = b;
+            this.sacnUniverseMap[universeNumber].sacnSlotsData[idx] = b;
             break;
         }
 
@@ -150,7 +153,7 @@ export class DmxController {
         }
       }
 
-      this.sacnClient.send(sacnPacket);
+      this.sacnClient.send(this.sacnUniverseMap[universeNumber].sacnPacket);
     }
 
     private HSVtoRGB(h: number, s: number, v: number) {
