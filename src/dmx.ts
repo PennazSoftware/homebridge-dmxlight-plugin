@@ -3,6 +3,8 @@ import { DMX, EnttecUSBDMXProDriver } from 'dmx-ts';
 import { Logger } from 'homebridge';
 import { Client } from 'e131';
 import { SacnUniverse } from './sacnUniverse';
+import Gradient from 'javascript-color-gradient';
+import shuffle from 'shuffle-array';
 
 export class DmxController {
     private dmx: DMX;
@@ -11,6 +13,7 @@ export class DmxController {
     private universeName = 'dmxLightUniverse';
     private sacnClient: Client;
     private sacnUniverseMap: { [id: number]: SacnUniverse } = {};
+    private updateInterval = 100;
 
     // Constructor
     private constructor(serialPort: string, ipAddress: string, universe: number, driverName: string, log: Logger) {
@@ -19,7 +22,7 @@ export class DmxController {
       // Configure Enttec Pro
       this.dmx = new DMX();
 
-      if (serialPort !== null && serialPort !== '') {
+      if (serialPort !== '') {
         this.dmx.addUniverse(this.universeName, new EnttecUSBDMXProDriver(serialPort))
           .then(() => {
             log.info('successfully added universe for Enttec Pro');
@@ -36,6 +39,7 @@ export class DmxController {
         this.sacnClient = new Client('localhost');
       }
 
+      this.log.info('Added accessory (' + driverName + ') at ' + serialPort + ipAddress + ' on universe #' + universe);
     }
 
     public static getInstance(serialPort: string, ipAddress: string, universe: number, driverName: string, log: Logger): DmxController {
@@ -52,14 +56,13 @@ export class DmxController {
     }
 
     setOn(driverName: string, universeNumber: number, startChannel: number, channelCount: number, colorOrder: string,
-      hue: number, saturation: number, brightness: number) {
-      this.log.info('Set On (Universe #' + universeNumber + ', Channels #' + startChannel + '-' + (startChannel + channelCount - 1) + ')');
+      hue: number, saturation: number, brightness: number, transitionEffect: string, transitionEffectDuration: number) {
 
       const rgb = this.HSVtoRGB(hue/360, saturation/100, brightness/100);
 
-      this.log.info('Set On with Color: HSV=' + hue/360 + '/' + saturation/100 + '/' + brightness/100 + ', RGB=' + rgb.r + '/' +
+      this.log.info('DMX On with Color: HSV=' + hue + '/' + saturation + '%/' + brightness + '%, RGB=' + rgb.r + '/' +
       rgb.g + '/' + rgb.b + ' (Universe #' + universeNumber + ', Channels #' + startChannel + '-' + (startChannel +
-        channelCount - 1) + ')');
+        channelCount - 1) + ', transition=' + transitionEffect + ', duration=' + transitionEffectDuration + ')');
 
       // Remap colors if necessary
       const colors = this.mapColors(rgb.r, rgb.g, rgb.b, colorOrder);
@@ -79,13 +82,29 @@ export class DmxController {
           this.dmx.update(this.universeName, channel);
           break;
         case 'sacn':
-          this.setSacnColor(universeNumber, startChannel, channelCount, colors[0], colors[1], colors[2]);
+          switch (transitionEffect.toLocaleLowerCase()) {
+            case 'gradient':
+              this.applyGradientTransition(universeNumber, startChannel, channelCount, colors[0], colors[1], colors[2],
+                transitionEffectDuration, colorOrder);
+              break;
+            case 'random':
+              this.applyRandomTransition(universeNumber, startChannel, channelCount, colors[0], colors[1], colors[2],
+                transitionEffectDuration);
+              break;
+            case 'chase':
+              this.applyChaseTransition(universeNumber, startChannel, channelCount, colors[0], colors[1], colors[2],
+                transitionEffectDuration);
+              break;
+            default:
+              this.setSacnColor(universeNumber, startChannel, channelCount, colors[0], colors[1], colors[2]);
+          }
           break;
       }
     }
 
-    setOff(driverName: string, universeNumber: number, startChannel: number, channelCount: number) {
-      this.log.info('Set Off (Universe #' + universeNumber + ', Channels #' + startChannel + '-' + (startChannel + channelCount - 1) + ')');
+    setOff(driverName: string, universeNumber: number, startChannel: number, channelCount: number, colorOrder: string,
+      transitionEffect: string, transitionEffectDuration: number) {
+      this.log.info('DMX Off (Universe #' + universeNumber + ', Channels #' + startChannel + '-' + (startChannel + channelCount - 1) + ')');
 
       switch (driverName) {
         case 'enttec-usb-dmx-pro':
@@ -94,7 +113,19 @@ export class DmxController {
           this.dmx.update(this.universeName, channel);
           break;
         case 'sacn':
-          this.setSacnColor(universeNumber, startChannel, channelCount, 0, 0, 0);
+          switch (transitionEffect.toLocaleLowerCase()) {
+            case 'gradient':
+              this.applyGradientTransition(universeNumber, startChannel, channelCount, 0, 0, 0, transitionEffectDuration, colorOrder);
+              break;
+            case 'random':
+              this.applyRandomTransition(universeNumber, startChannel, channelCount, 0, 0, 0, transitionEffectDuration);
+              break;
+            case 'chase':
+              this.applyChaseTransition(universeNumber, startChannel, channelCount, 0, 0, 0, transitionEffectDuration);
+              break;
+            default:
+              this.setSacnColor(universeNumber, startChannel, channelCount, 0, 0, 0);
+          }
           break;
       }
     }
@@ -104,9 +135,9 @@ export class DmxController {
 
       const rgb = this.HSVtoRGB(hue/360, saturation/100, brightness/100);
 
-      this.log.info('Set Color: HSV=' + hue/360 + '/' + saturation/100 + '/' + brightness/100 + ', RGB=' + rgb.r + '/' +
-      rgb.g + '/' + rgb.b + ' (Universe #' + universeNumber + ', Channels #' + startChannel + '-' + (startChannel +
-        channelCount - 1) + ')');
+      this.log.info('Set Color: HSV=' + hue + '/' + saturation + '%/' +
+      brightness + '%, RGB=' + rgb.r + '/' + rgb.g + '/' + rgb.b + ' (Universe #' + universeNumber +
+      ', Channels #' + startChannel + '-' + (startChannel + channelCount - 1) + ')');
 
       // Remap colors if necessary
       const colors = this.mapColors(rgb.r, rgb.g, rgb.b, colorOrder);
@@ -131,7 +162,8 @@ export class DmxController {
 
     private setSacnColor(universeNumber: number, startChannel: number, channelCount: number, r: number, g: number, b: number) {
       const endChannel = startChannel-1 + channelCount-1;
-      this.log.info('Updating slots buffer from ' + (startChannel-1) + ' - ' + endChannel);
+      //this.log.info('Updating slots buffer from ' + (startChannel-1) + ' - ' + endChannel);
+      //this.log.info('Color set to ' + r + '/' + g + '/' + b);
 
       let p = 1;
       for (let idx = startChannel-1; idx <= endChannel; idx++) {
@@ -154,6 +186,85 @@ export class DmxController {
       }
 
       this.sacnClient.send(this.sacnUniverseMap[universeNumber].sacnPacket);
+    }
+
+    // applyGradientTransition creates a smooth transition from one color to the next by utilizing a gradient of colors
+    private applyGradientTransition(universeNumber: number, startChannel: number, channelCount: number, r: number, g: number, b:
+      number, durationMs: number, colorOrder: string) {
+      const currentColor = this.getCurrentColor(universeNumber, startChannel, colorOrder);
+      const currentColorStr = this.rgbToColorString(currentColor[0], currentColor[1], currentColor[2]);
+      const finalColorStr = this.rgbToColorString(r, g, b);
+
+      const colorPoints = Math.round(durationMs/this.updateInterval);
+
+      const gradientColors = new Gradient();
+      gradientColors.setColorGradient(currentColorStr, finalColorStr);
+      gradientColors.setMidpoint(colorPoints);
+      const colors = gradientColors.getColors();
+
+      const colToStringArray = this.colorStringToArray;
+      let colorIndex = 0;
+      const interval = this.updateInterval;
+      const timerId = setInterval(() => {
+        const rgb = colToStringArray(colors[colorIndex]);
+        this.setSacnColor(universeNumber, startChannel, channelCount, rgb[0], rgb[1], rgb[2]);
+        colorIndex += 1;
+
+        if (colorIndex >= colors.length) {
+          clearTimeout(timerId);
+          return;
+        }
+      }, interval);
+    }
+
+    // applyRandomTransition transitions each light to the desired color one at a time in a random order
+    private applyRandomTransition(universeNumber: number, startChannel: number, channelCount: number, r: number, g: number, b: number,
+      durationMs: number) {
+      const switchOrder = this.createRandomColorSwitchOrder(channelCount);
+      const timeInterval = Math.round(durationMs/switchOrder.length);
+      let index = 0;
+
+      const timerId = setInterval(() => {
+        this.setSacnColor(universeNumber, switchOrder[index], 3, r, g, b);
+        index += 1;
+
+        if (index >= switchOrder.length) {
+          clearTimeout(timerId);
+          return;
+        }
+      }, timeInterval);
+    }
+
+    // applyChaseTransition transitions each light to the desired color one at a time from beginning to end
+    private applyChaseTransition(universeNumber: number, startChannel: number, channelCount: number, r: number, g: number, b: number,
+      durationMs: number) {
+      const timeInterval = Math.round(durationMs/(channelCount/3));
+      let channelIndex = 0;
+
+      const timerId = setInterval(() => {
+        this.setSacnColor(universeNumber, (startChannel + channelIndex), 3, r, g, b);
+        channelIndex += 3;
+
+        if (channelIndex >= channelCount) {
+          clearTimeout(timerId);
+          return;
+        }
+      }, timeInterval);
+    }
+
+    // createRandomColorSwitchOrder creates a random order of lights to change color
+    private createRandomColorSwitchOrder(lightCount: number) {
+      const order: number[] = [];
+
+      // Create an array with the indexes for all lights. Since each light has three channels we need to skip two
+      for (let i=1; i <= lightCount; i+=3) {
+        order.push(i);
+      }
+
+      // Shuffle the array randomly
+      shuffle(order);
+
+      return order;
     }
 
     private HSVtoRGB(h: number, s: number, v: number) {
@@ -203,5 +314,93 @@ export class DmxController {
       }
 
       return colors;
+    }
+
+    // colorStringToArray converts a color string in the format of "#3F2CAF" to an array of integers: [127, 32, 234]
+    private colorStringToArray(colorHexString: string) {
+
+      const result: Array<number> = [];
+
+      if (colorHexString.length !== 7) {
+        return result;
+      }
+
+      function hexToDecimal(hex: string) {
+        return parseInt(hex, 16);
+      }
+      try {
+        return [hexToDecimal(colorHexString.substring(1, 3)), hexToDecimal(colorHexString.substring(3, 5)),
+          hexToDecimal(colorHexString.substring(5, 7))];
+      } catch {
+        this.log.error('failed to convert hex string to number');
+        return result;
+      }
+
+      return result;
+    }
+
+    private getCurrentColor(universeNumber: number, startChannel: number, colorOrder: string) {
+      const firstChannel: number = this.sacnUniverseMap[universeNumber].sacnSlotsData[startChannel-1];
+      const secondChannel: number = this.sacnUniverseMap[universeNumber].sacnSlotsData[startChannel];
+      const thirdChannel: number = this.sacnUniverseMap[universeNumber].sacnSlotsData[startChannel+1];
+      let red = firstChannel;
+      let blue = secondChannel;
+      let green = thirdChannel;
+
+      switch (colorOrder.toLowerCase().substring(0, 1)) {
+        case 'r':
+          red = firstChannel;
+          break;
+        case 'g':
+          green = firstChannel;
+          break;
+        case 'b':
+          blue = firstChannel;
+          break;
+      }
+
+      switch (colorOrder.toLowerCase().substring(1, 2)) {
+        case 'r':
+          red = secondChannel;
+          break;
+        case 'g':
+          green = secondChannel;
+          break;
+        case 'b':
+          blue = secondChannel;
+          break;
+      }
+
+      switch (colorOrder.toLowerCase().substring(2, 3)) {
+        case 'r':
+          red = thirdChannel;
+          break;
+        case 'g':
+          green = thirdChannel;
+          break;
+        case 'b':
+          blue = thirdChannel;
+          break;
+      }
+
+
+      return [red, green, blue];
+    }
+
+    private rgbToColorString(r: number, g: number, b: number) {
+      let colorString = '#';
+      colorString += this.intToHexStr(r);
+      colorString += this.intToHexStr(g);
+      colorString += this.intToHexStr(b);
+      return colorString;
+    }
+
+    private intToHexStr(input: number) {
+      let result = input.toString(16);
+      if (result.length === 1) {
+        result += '0';
+      }
+
+      return result;
     }
 }

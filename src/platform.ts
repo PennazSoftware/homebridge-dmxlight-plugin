@@ -64,6 +64,83 @@ export class DMXLightHomebridgePlatform implements DynamicPlatformPlugin {
         colorOrder = 'rgb';
       }
 
+      let ipAddress = '';
+      if (device.ipAddress !== undefined && device.ipAddress !== null) {
+        ipAddress = device.ipAddress;
+      }
+
+      let serialPortName = '';
+      if (device.serialPortName !== undefined && device.serialPortName !== null) {
+        serialPortName = device.serialPortName;
+      }
+
+      let dmxStartChannel = 0;
+      if (device.dmxStartChannel !== undefined && device.dmxStartChannel !== null) {
+        dmxStartChannel = device.dmxStartChannel;
+      }
+
+      let dmxUniverse = 0;
+      if (device.dmxUniverse !== undefined && device.dmxUniverse !== null) {
+        dmxUniverse = device.dmxUniverse;
+      }
+
+      let dmxChannelCount = 0;
+      if (device.dmxChannelCount !== undefined && device.dmxChannelCount !== null) {
+        dmxChannelCount = device.dmxChannelCount;
+      }
+
+      let driverName = '';
+      if (device.driverName !== undefined && device.driverName !== null) {
+        driverName = device.driverName.toString().toLocaleLowerCase();
+      } else {
+        this.log.error('The driverName field is missing from the accessory config JSON');
+      }
+
+      let transitionDuration = 0;
+      if (device.transitionDuration !== undefined && device.transitionDuration !== null) {
+        transitionDuration = device.transitionDuration;
+      }
+
+      // verify that if a transition effect was specified that the duration is > 0
+      let transitionEffect = '';
+      if (device.transitionEffect !== undefined && device.transitionEffect !== null) {
+        transitionEffect = device.transitionEffect.toString().toLocaleLowerCase();
+      }
+
+      switch (transitionEffect) {
+        case 'gradient':
+        case 'chase':
+        case 'random':
+          if (transitionDuration === 0) {
+            this.log.warn('The ' + transitionEffect + ' was specified, however, the transition duration is 0.');
+          }
+
+          if (driverName === 'enttec-usb-dmx-pro') {
+            this.log.warn('Transition effects are not compatible with enttec-usb-dmx-pro devices.');
+          }
+          break;
+        default:
+          if (transitionEffect !== 'none' && transitionEffect !== '') {
+            this.log.warn('An invalid transition effect was specified: ' + transitionEffect);
+          }
+      }
+
+      // verify that if the device is sacn-based that an ip address was specified
+      if (driverName === 'sacn') {
+        if (ipAddress === '') {
+          this.log.error('The IP Address for each SACN accessory must be specified in the accessory config.');
+          this.log.error('NOTE: The IP Address was previously a global value but is now associated with each accessory.');
+        }
+      }
+
+      // verify that if the device is enttec-usb-dmx-pro-based that a serial port was specified
+      if (driverName === 'enttec-usb-dmx-pro') {
+        if (serialPortName === '') {
+          this.log.error('The IP Address for each SACN accessory must be specified in the accessory config.');
+          this.log.error('NOTE: The IP Address was previously a global value but is now associated with each accessory.');
+        }
+      }
+
       // generate a unique id for the accessory
       const uuid = this.api.hap.uuid.generate(device.id);
 
@@ -77,8 +154,9 @@ export class DMXLightHomebridgePlatform implements DynamicPlatformPlugin {
 
         // create the accessory handler for the restored accessory
         // this is imported from `platformAccessory.ts`
-        new DMXLightPlatformAccessory(this, existingAccessory, device.dmxStartChannel, device.dmxUniverse,
-          device.dmxChannelCount, device.driverName, colorOrder);
+        new DMXLightPlatformAccessory(this, existingAccessory, dmxStartChannel, dmxUniverse,
+          dmxChannelCount, driverName, colorOrder, transitionEffect, transitionDuration,
+          ipAddress, serialPortName);
 
       } else {
         // the accessory does not yet exist, so we need to create it
@@ -93,8 +171,9 @@ export class DMXLightHomebridgePlatform implements DynamicPlatformPlugin {
 
         // create the accessory handler for the newly create accessory
         // this is imported from `platformAccessory.ts`
-        new DMXLightPlatformAccessory(this, accessory, device.dmxStartChannel, device.dmxUniverse,
-          device.dmxChannelCount, device.driverName, colorOrder);
+        new DMXLightPlatformAccessory(this, accessory, dmxStartChannel, dmxUniverse,
+          dmxChannelCount, driverName, colorOrder, transitionEffect, transitionDuration,
+          ipAddress, serialPortName);
 
         // link the accessory to your platform
         this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
@@ -105,25 +184,8 @@ export class DMXLightHomebridgePlatform implements DynamicPlatformPlugin {
   // Get the config properties
   getConfigProperties() {
 
-    let ipAddress = this.config.ipAddress;
-
-    if (ipAddress === null || ipAddress === undefined) {
-      ipAddress = '';
-    } else {
-      ipAddress = (ipAddress + '').trim();
-    }
-
-    let serialPort = this.config.serialPortName;
-    if (serialPort === null || serialPort === undefined) {
-      serialPort = '';
-    } else {
-      serialPort = (serialPort + '').trim();
-    }
-
     const properties = {
       name: this.config.name?.toString().trim(),
-      ipAddress: ipAddress,
-      serialPortName: serialPort,
       accessories: this.config.accessories,
     };
 
