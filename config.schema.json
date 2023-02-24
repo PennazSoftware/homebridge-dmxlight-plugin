@@ -10,18 +10,6 @@
         "type": "string",
         "required": true,
         "default": "DMX Light"
-      },
-      "ipAddress": {
-        "title": "IP Address (Streaming ACN only)",
-        "type": "string",
-        "required": true,
-        "default": ""
-      },
-      "serialPortName": {
-        "title": "Serial Port Name (Enttec Pro only)",
-        "type": "string",
-        "required": true,
-        "default": ""
       }
     }
   }

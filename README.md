@@ -8,10 +8,11 @@
 
 # Homebridge DMX Light Plugin
 
-This is a Homebridge platform plugin that controls DMX-based lighting control systems. It supports the following lighting control systems:
+This is a Homebridge platform plugin that controls DMX-based lighting control systems. The following lighting control systems have been confirmed to work but you should have luck with any sACN device:
 
 - Enttec Pro USB Compatible controllers such as the Enttec Pro or HolidayCoro Acti-Dongle.
 - Streaming ACN (E131) controllers such as the HolidayCoro Flex and Alpha Pix.
+- Chauvet DMX-AN2
 
 ## Installation
 
@@ -27,12 +28,6 @@ In order to configure accessories (i.e., lights, light strands, etc.) you need t
     
     b. Locate the 'DMX Light' plugin and choose 'Settings'
 
-    c. If you are using a Streaming ACN (E131) lighting controller then specify the IP Address of the controller.
-
-    d. If you are using an Enttec Pro USB compatible controller then specify the serial port name where the Enttec Pro is connected to. The device MUST be connected to the same computer running Homebridge. To identify the USB port on a Raspberry Pi, at a command prompt enter `ls /dev/` and then look for something named similar to 'ttyUSB0'. Enter the full path in the text box. It should look like "/dev/ttyUSB0".
-
-    NOTE: If you are not using the IP Address or Serial Port configuration then leave the field black. An error may occur if you specify a value that is invalid.
-
 2. <b>Config UI</b>
 
     a. In Homebridge, click on the 'Config' tab at the top of the screen
@@ -44,14 +39,13 @@ In order to configure accessories (i.e., lights, light strands, etc.) you need t
     ```
             {
             "name": "DMX Light",
-            "ipAddress": "192.168.1.73",
-            "serialPortName": "/dev/ttyUSB0",
             "platform": "DMXLightHomebridgePlugin",
             "accessories": [
                 {
                     "name": "Garage Left Flood",
                     "id": "GLF",
                     "driverName": "enttec-usb-dmx-pro",
+                    "serialPortName": "/dev/ttyUSB0",
                     "dmxStartChannel": 1,
                     "dmxChannelCount": 1,
                     "dmxUniverse": 1,
@@ -61,10 +55,13 @@ In order to configure accessories (i.e., lights, light strands, etc.) you need t
                     "name": "House Outline",
                     "id": "HO",
                     "driverName": "sacn",
+                    "ipAddress": "192.168.1.73",
                     "dmxStartChannel": 1,
                     "dmxChannelCount": 100,
                     "dmxUniverse": 130,
-                    "colorOrder": "bgr"
+                    "colorOrder": "bgr",
+                    "transitionEffect": "gradient",
+                    "transitionDuration": 3000
                 }
             ]
         }
@@ -72,28 +69,51 @@ In order to configure accessories (i.e., lights, light strands, etc.) you need t
 
     d. See below for a detailed description on what each field means
 
+    **BREAKING CHANGE**: Note that versions 1.1.16 and older used a global IP Address and Serial Port configuration. Newer versions now contain this information within the configuration for each accessory. You will need to move this information if you are upgrading from version 1.1.16 or prior.
+
 ## Accessory Field Description
 
-- name: A friendly name describing the item. This will be the default name that appears in the Home app.
+- **name**: A friendly name describing the item. This will be the default name that appears in the Home app.
 
-- id: A unique identifier used to differentiate the accessories from one another. You can specify whatever you want as long as each accessory has a different id.
+- **id**: A unique identifier used to differentiate the accessories from one another. You can specify whatever you want as long as each accessory has a different id.
 
-- driverName: Specify the name of the driver used to the control the item. Supported options are:
+- **driverName**: Specify the name of the driver used to the control the item. Supported options are:
 
-    - sacn: Used for Streaming ACN (E131) devices such as the HolidayCoro Flex or AlphaPix controllers.
-    - enttec-usb-dmx-pro: Used for devices controlled by an Enttec Pro compatible device such as the Enttec Pro or Holiday Coro ActiDongle.
+    - **sacn**: Used for Streaming ACN (E131) devices such as the HolidayCoro Flex or AlphaPix controllers.
+    - **enttec-usb-dmx-pro**: Used for devices controlled by an Enttec Pro compatible device such as the Enttec Pro or Holiday Coro ActiDongle.
 
-- dmxUniverse: The universe number configured for your lights. This should be an integer from 1-512.
+- **dmxUniverse**: The universe number configured for your lights. This should be an integer from 1-512.
 
-- dmxStartChannel: The first channel associated within the universe.
+- **dmxStartChannel**: The first channel associated within the universe.
 
-- dmxChannelCount: The number of channels within the universe to control. For a single light, specify 1. If you are controlling a light strand with 100 lights then specify 100.
+- **dmxChannelCount**: The number of channels within the universe to control. For a single light, specify 1. If you are controlling a light strand with 100 lights then specify 100.
 
-- colorOrder: The order of RGB colors. Normally, lights are ordered in RGB (red, green and then blue). If the lights are in a different order then specify their order here. If not specified, the default is 'RGB'.
+- **colorOrder**: The order of RGB colors. Normally, lights are ordered in RGB (red, green and then blue). If the lights are in a different order then specify their order here. If not specified, the default is 'RGB'.
 
+- **ipAddress**: If you are using a Streaming ACN (E131) lighting controller then specify the IP Address of the controller.
+
+- **transitionEffect**: Specify an optional transition effect to be applied when lights are turned on or off. Transitions DO NOT apply when making color changes. Transition effects are only supported for SACN devices.  Supported Effects:
+
+    - **None** or **'blank'**: Do not use any transition effect
+
+    - **Gradient**: Changes from the current color to the desired color by utilizing a series of gradient color changes during the transition.
+
+    - **Chase**: Sets the new color one light at a time, beginning with the first light and transitioning in a linear fashion.
+
+    - **Random**: Sets the new color one light at a time in a random order.
+
+- **transitionDuration**: The duration of time (in milliseconds) to apply a transition effect. Applies only when a transition effect is used. Specify 0 for no transition. Note that if you specify too short of a duration then it may negatively impact the appearance of the effect.
+
+- **serialPortName**: Serial port of the device connected to the serial port on the Homebridge computer, if applicable. Applies ONLY to accessories with a driverName of 'enttec-usb-dmx-pro'. Note that as of version 1.1.17 this setting was moved from the main settings to each accessories definition as the example above shows. Note that the device MUST be connected to the same computer running Homebridge. To identify the USB port on a Raspberry Pi, at a command prompt enter `ls /dev/` and then look for something named similar to 'ttyUSB0'. Enter the full path in the text box. It should look like "/dev/ttyUSB0". 
 
 ## Revision History
 
 ### 1.1.16 (Jan 30, 2023)
 
-  - Fixed issue where multiple accessories using the same univserse were overwriting each others commands
+  - Fixed issue where multiple accessories using the same univserse were overwriting each others commands.
+
+### 1.2.1 (Feb 23, 2023)
+
+  - Added gradient, chase and random transition effects when lights change colors.
+
+  - Moved IP Address and Serial Port configuration into the definitino for each accessory so that multiple devices can be supported.  This is a "Breaking Change" and will require modification of the config JSON in HomeBridge.

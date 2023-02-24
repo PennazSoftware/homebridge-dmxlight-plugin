@@ -15,6 +15,10 @@ export class DMXLightPlatformAccessory {
   private universeNumber: number;
   private channelCount: number;
   private colorOrder: string;
+  private transitionEffect: string;
+  private transitionDuration: number;
+  private ipAddress: string;
+  private serialPortName: string;
 
   /**
    * These are just used to create a working example
@@ -35,17 +39,24 @@ export class DMXLightPlatformAccessory {
     channelCount: number,
     driverName: string,
     colorOrder: string,
+    transitionEffect: string,
+    transitionDuration: number,
+    ipAddress: string,
+    serialPortName: string,
   ) {
 
-    const properties = this.platform.getConfigProperties();
     this.startChannel = startChannel;
     this.universeNumber = universeNumber;
     this.channelCount = channelCount;
     this.driverName = driverName;
     this.colorOrder = colorOrder;
+    this.transitionEffect = transitionEffect;
+    this.transitionDuration = transitionDuration;
+    this.ipAddress = ipAddress;
+    this.serialPortName = serialPortName;
 
     // Create the DMX Controller object and initialize it
-    this.dmxController = DmxController.getInstance(properties.serialPortName, properties.ipAddress,
+    this.dmxController = DmxController.getInstance(serialPortName, ipAddress,
       universeNumber, driverName, this.platform.log);
 
     // set accessory information
@@ -94,9 +105,11 @@ export class DMXLightPlatformAccessory {
 
     if (this.accessoryState.On) {
       this.dmxController.setOn(this.driverName, this.universeNumber, this.startChannel, this.channelCount, this.colorOrder,
-        this.accessoryState.Hue, this.accessoryState.Saturation, this.accessoryState.Brightness);
+        this.accessoryState.Hue, this.accessoryState.Saturation, this.accessoryState.Brightness, this.transitionEffect,
+        this.transitionDuration);
     } else {
-      this.dmxController.setOff(this.driverName, this.universeNumber, this.startChannel, this.channelCount);
+      this.dmxController.setOff(this.driverName, this.universeNumber, this.startChannel, this.channelCount, this.colorOrder,
+        this.transitionEffect, this.transitionDuration);
     }
 
     //this.platform.log.info('Set Characteristic On ->', value);
