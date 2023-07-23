@@ -1,7 +1,6 @@
 import { DMX, EnttecUSBDMXProDriver } from 'dmx-ts';
 import { Logger } from 'homebridge';
 import { SacnUniverse } from './sacnUniverse';
-import Gradient from 'javascript-color-gradient';
 import shuffle from 'shuffle-array';
 
 export class DmxController {
