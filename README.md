@@ -130,7 +130,7 @@ In order to configure accessories (i.e., lights, light strands, etc.) you need t
 
   - Moved IP Address and Serial Port configuration into the definitino for each accessory so that multiple devices can be supported.  This is a "Breaking Change" and will require modification of the config JSON in HomeBridge.
 
-### 1.2.2 (Jul 22, 2023)
+### 1.2.4 (Jul 22, 2023)
 
  - Added support for multiple SACN devices with different IP Addresses
 
