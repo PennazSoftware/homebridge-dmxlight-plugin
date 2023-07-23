@@ -62,6 +62,18 @@ In order to configure accessories (i.e., lights, light strands, etc.) you need t
                     "colorOrder": "bgr",
                     "transitionEffect": "gradient",
                     "transitionDuration": 3000
+                },
+                {
+                    "name": "Single White Lights",
+                    "id": "SWL",
+                    "driverName": "sacn",
+                    "ipAddress": "192.168.1.101",
+                    "dmxStartChannel": 1,
+                    "dmxChannelCount": 100,
+                    "dmxUniverse": 122,
+                    "colorOrder": "w",
+                    "transitionEffect": "",
+                    "transitionDuration": 0
                 }
             ]
         }
@@ -88,11 +100,11 @@ In order to configure accessories (i.e., lights, light strands, etc.) you need t
 
 - **dmxChannelCount**: The number of channels within the universe to control. For a single light, specify 1. If you are controlling a light strand with 100 lights then specify 100.
 
-- **colorOrder**: The order of RGB colors. Normally, lights are ordered in RGB (red, green and then blue). If the lights are in a different order then specify their order here. If not specified, the default is 'RGB'.
+- **colorOrder**: The order of RGB colors. Normally, lights are ordered in RGB (red, green and then blue). If the lights are in a different order then specify their order here. If not specified, the default is 'RGB'. If the lights do not support an RGB configuration (i.e., only utilize one channel) then specify "w" for the color order.
 
 - **ipAddress**: If you are using a Streaming ACN (E131) lighting controller then specify the IP Address of the controller.
 
-- **transitionEffect**: Specify an optional transition effect to be applied when lights are turned on or off. Transitions DO NOT apply when making color changes. Transition effects are only supported for SACN devices.  Supported Effects:
+- **transitionEffect**: Specify an optional transition effect to be applied when lights are turned on or off. Transitions DO NOT apply when making color changes. Transition effects are only supported for SACN devices and do not support a 'colorOrder' configuration of "w".  Supported Effects:
 
     - **None** or **'blank'**: Do not use any transition effect
 
@@ -117,3 +129,11 @@ In order to configure accessories (i.e., lights, light strands, etc.) you need t
   - Added gradient, chase and random transition effects when lights change colors.
 
   - Moved IP Address and Serial Port configuration into the definitino for each accessory so that multiple devices can be supported.  This is a "Breaking Change" and will require modification of the config JSON in HomeBridge.
+
+### 1.2.2 (Jul 22, 2023)
+
+ - Added support for multiple SACN devices with different IP Addresses
+
+ - Added support for single-channel lights (i.e., non-RGB) using a colorOrder of 'w'. Transition effects are not supported in this configuration.
+
+ - Fix Gradient (i.e., fade-in/fade-out) transition effect that was causing lights to flicker during transition.
