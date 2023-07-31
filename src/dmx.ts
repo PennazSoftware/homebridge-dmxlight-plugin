@@ -46,10 +46,15 @@ export class DmxController {
 
       const rgb = this.HSVtoRGB(hue/360, saturation/100, brightness/100);
 
-      this.log.info('DMX On with Color: HSV=' + hue + '/' + saturation + '%/' + brightness + '%, RGB=' + rgb.r + '/' +
-      rgb.g + '/' + rgb.b + ' (Universe #' + this.sacnUniverse.universe + ', Channels #' + this.sacnUniverse.channelStart + '-' +
-        (this.sacnUniverse.channelStart + this.sacnUniverse.channelCount - 1) + ', transition=' + this.sacnUniverse.transitionEffect +
-        ', duration=' + this.sacnUniverse.transitionEffectDuration + ')');
+      if (this.colorOrder !== 'w') {
+        this.log.info('DMX On with Color: HSV=' + hue + '/' + saturation + '%/' + brightness + '%, RGB=' + rgb.r + '/' +
+        rgb.g + '/' + rgb.b + ' (Universe #' + this.sacnUniverse.universe + ', Channels #' + this.sacnUniverse.channelStart + '-' +
+          (this.sacnUniverse.channelStart + this.sacnUniverse.channelCount - 1) + ', transition=' + this.sacnUniverse.transitionEffect +
+          ', duration=' + this.sacnUniverse.transitionEffectDuration + ')');
+      } else {
+        this.log.info('DMX On at 255! (Universe #' + this.sacnUniverse.universe + ', Channels #' + this.sacnUniverse.channelStart + '-' +
+        (this.sacnUniverse.channelStart + this.sacnUniverse.channelCount - 1));
+      }
 
       // Remap colors if necessary
       const colors = this.mapColors(rgb.r, rgb.g, rgb.b, this.sacnUniverse.colorOrder);
@@ -64,6 +69,14 @@ export class DmxController {
       switch (this.driverName) {
         case 'enttec-usb-dmx-pro':
           this.log.info('setting channels ' + this.sacnUniverse.channelStart + '-' + (this.sacnUniverse.channelStart+2) + ' on');
+
+          if (this.sacnUniverse.colorOrder === 'w') {
+            // eslint-disable-next-line no-case-declarations
+            const channel = { [this.sacnUniverse.channelStart]: 255 };
+            this.dmx.update(this.dmxUniverseName, channel);
+            return;
+          }
+
           // eslint-disable-next-line no-case-declarations
           const channel = { [this.sacnUniverse.channelStart]: colors[0], [this.sacnUniverse.channelStart+1]: colors[1],
             [this.sacnUniverse.channelStart+2]: colors[2] };
@@ -97,6 +110,13 @@ export class DmxController {
 
       switch (this.driverName) {
         case 'enttec-usb-dmx-pro':
+          if (this.sacnUniverse.colorOrder === 'w') {
+            // eslint-disable-next-line no-case-declarations
+            const channel = { [this.sacnUniverse.channelStart]: 0 };
+            this.dmx.update(this.dmxUniverseName, channel);
+            return;
+          }
+
           // eslint-disable-next-line no-case-declarations
           const channel = { [this.sacnUniverse.channelStart]: 0, [this.sacnUniverse.channelStart+1]: 0,
             [this.sacnUniverse.channelStart+2]: 0 };
@@ -128,15 +148,27 @@ export class DmxController {
 
       const rgb = this.HSVtoRGB(hue/360, saturation/100, brightness/100);
 
-      this.log.info('Set Color: HSV=' + hue + '/' + saturation + '%/' +
-      brightness + '%, RGB=' + rgb.r + '/' + rgb.g + '/' + rgb.b + ' (Universe #' + this.sacnUniverse.universe +
-      ', Channels #' + this.sacnUniverse.channelStart + '-' + (this.sacnUniverse.channelStart + this.sacnUniverse.channelCount - 1) + ')');
+      if (this.colorOrder !== 'w') {
+        this.log.info('Set Color: HSV=' + hue + '/' + saturation + '%/' +
+        brightness + '%, RGB=' + rgb.r + '/' + rgb.g + '/' + rgb.b + ' (Universe #' + this.sacnUniverse.universe +
+        ', Channels #' + this.sacnUniverse.channelStart + '-' + (this.sacnUniverse.channelStart +
+          this.sacnUniverse.channelCount - 1) + ')');
+      } else {
+        this.log.info('Set Brightness to ' + (255 * brightness));
+      }
 
       // Remap colors if necessary
       const colors = this.mapColors(rgb.r, rgb.g, rgb.b, this.sacnUniverse.colorOrder);
 
       switch (this.driverName) {
         case 'enttec-usb-dmx-pro':
+          if (this.sacnUniverse.colorOrder === 'w') {
+            // eslint-disable-next-line no-case-declarations
+            const channel = { [this.sacnUniverse.channelStart]: 255 * brightness };
+            this.dmx.update(this.dmxUniverseName, channel);
+            return;
+          }
+
           // eslint-disable-next-line no-case-declarations
           let channel = { [this.sacnUniverse.channelStart]: colors[0]};
           this.dmx.update(this.dmxUniverseName, channel);
