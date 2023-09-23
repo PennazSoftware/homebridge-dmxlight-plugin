@@ -11,6 +11,7 @@ export class DmxController {
     private sacnUniverse: SacnUniverse;
     private driverName = '';
     private colorOrder = 'rgb';
+    private singleChannel = 0;
 
     // Constructor
     constructor(serialPort: string, ipAddress: string, universe: number, driverName: string,
@@ -46,15 +47,15 @@ export class DmxController {
 
       const rgb = this.HSVtoRGB(hue/360, saturation/100, brightness/100);
 
-      if (this.colorOrder !== 'w') {
+    // Handle single-channel operations
+    if (this.sacnUniverse.colorOrder === 'w') {
+        singleChannel = 1;
+    }
+        
         this.log.info('DMX On with Color: HSV=' + hue + '/' + saturation + '%/' + brightness + '%, RGB=' + rgb.r + '/' +
         rgb.g + '/' + rgb.b + ' (Universe #' + this.sacnUniverse.universe + ', Channels #' + this.sacnUniverse.channelStart + '-' +
           (this.sacnUniverse.channelStart + this.sacnUniverse.channelCount - 1) + ', transition=' + this.sacnUniverse.transitionEffect +
           ', duration=' + this.sacnUniverse.transitionEffectDuration + ')');
-      } else {
-        this.log.info('DMX On at 255! (Universe #' + this.sacnUniverse.universe + ', Channels #' + this.sacnUniverse.channelStart + '-' +
-        (this.sacnUniverse.channelStart + this.sacnUniverse.channelCount - 1));
-      }
 
       // Remap colors if necessary
       const colors = this.mapColors(rgb.r, rgb.g, rgb.b, this.sacnUniverse.colorOrder);
@@ -82,6 +83,7 @@ export class DmxController {
             [this.sacnUniverse.channelStart+2]: colors[2] };
           this.dmx.update(this.dmxUniverseName, channel);
           break;
+
         case 'sacn':
           switch (this.sacnUniverse.transitionEffect) {
             case 'gradient':
@@ -173,11 +175,13 @@ export class DmxController {
           let channel = { [this.sacnUniverse.channelStart]: colors[0]};
           this.dmx.update(this.dmxUniverseName, channel);
 
+        if (singleChannel === 0) {
           channel = { [this.sacnUniverse.channelStart+1]: colors[1]};
           this.dmx.update(this.dmxUniverseName, channel);
 
           channel = { [this.sacnUniverse.channelStart+2]: colors[2]};
           this.dmx.update(this.dmxUniverseName, channel);
+        }
           break;
         case 'sacn':
           this.setSacnColor(colors[0], colors[1], colors[2]);
@@ -196,12 +200,14 @@ export class DmxController {
           case 1:
             this.sacnUniverse.sacnSlotsData[idx] = r;
             break;
-          case 2:
-            this.sacnUniverse.sacnSlotsData[idx] = g;
-            break;
-          case 3:
-            this.sacnUniverse.sacnSlotsData[idx] = b;
-            break;
+            if (singleChannel === 0) {
+              case 2:
+                this.sacnUniverse.sacnSlotsData[idx] = g;
+                break;
+              case 3:
+                this.sacnUniverse.sacnSlotsData[idx] = b;
+                break;
+            }
         }
 
         p++;
