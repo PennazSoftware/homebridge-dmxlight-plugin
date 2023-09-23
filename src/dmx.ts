@@ -387,41 +387,41 @@ export class DmxController {
         let blue = secondChannel;
         let green = thirdChannel; 
           
-      switch (this.sacnUniverse.colorOrder.toLowerCase().substring(0, 1)) {
-        case 'r':
-          red = firstChannel;
-          break;
-        case 'g':
-          green = firstChannel;
-          break;
-        case 'b':
-          blue = firstChannel;
-          break;
-      }
+        switch (this.sacnUniverse.colorOrder.toLowerCase().substring(0, 1)) {
+            case 'r':
+              red = firstChannel;
+              break;
+            case 'g':
+              green = firstChannel;
+              break;
+            case 'b':
+              blue = firstChannel;
+              break;
+        }
 
-      switch (this.sacnUniverse.colorOrder.toLowerCase().substring(1, 2)) {
-        case 'r':
-          red = secondChannel;
-          break;
-        case 'g':
-          green = secondChannel;
-          break;
-        case 'b':
-          blue = secondChannel;
-          break;
-      }
+        switch (this.sacnUniverse.colorOrder.toLowerCase().substring(1, 2)) {
+            case 'r':
+              red = secondChannel;
+              break;
+            case 'g':
+              green = secondChannel;
+              break;
+            case 'b':
+              blue = secondChannel;
+              break;
+          }
 
-      switch (this.sacnUniverse.colorOrder.toLowerCase().substring(2, 3)) {
-        case 'r':
-          red = thirdChannel;
-          break;
-        case 'g':
-          green = thirdChannel;
-          break;
-        case 'b':
-          blue = thirdChannel;
-          break;
-      }
+          switch (this.sacnUniverse.colorOrder.toLowerCase().substring(2, 3)) {
+            case 'r':
+              red = thirdChannel;
+              break;
+            case 'g':
+              green = thirdChannel;
+              break;
+            case 'b':
+              blue = thirdChannel;
+              break;
+          }
       }
       return [red, green, blue];
     }
