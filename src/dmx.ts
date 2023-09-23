@@ -12,8 +12,6 @@ export class DmxController {
     private driverName = '';
     private colorOrder = 'rgb';
     
-    let singleChannel = 0;
-
     // Constructor
     constructor(serialPort: string, ipAddress: string, universe: number, driverName: string,
       channelStart: number, channelCount: number, colorOrder: string, transitionEffect: string,
@@ -23,13 +21,6 @@ export class DmxController {
       this.driverName = driverName;
       this.colorOrder = colorOrder;
         
-      // Handle single-channel operations
-      if (this.sacnUniverse.colorOrder === 'w') {
-        singleChannel = 1;
-      }
-      // Internally we will treat single-channel as standard rgb, using the 'r' value for all three, 
-      // so gradient transition will work properly, and we limit the setSacnColor function to send only the first value.
-
       if (serialPort !== '') {
         // Configure Enttec Pro
         this.dmx.addUniverse(this.dmxUniverseName, new EnttecUSBDMXProDriver(serialPort))
@@ -204,16 +195,17 @@ export class DmxController {
           case 1:
             this.sacnUniverse.sacnSlotsData[idx] = r;
             break;
-
-            // Don't send the other two values for single-channel fixtures
-                
-            if (singleChannel === 0) {
-              case 2:
+    // Don't send the other two values for single-channel fixtures                
+          case 2:
+            if (this.colorOrder !== 'w') {
                 this.sacnUniverse.sacnSlotsData[idx] = g;
-                break;
-              case 3:
+            }
+            break;
+          case 3:
+            if (this.colorOrder !== 'w') {
                 this.sacnUniverse.sacnSlotsData[idx] = b;
-                break;
+            }
+            break;
             }
         }
 
@@ -267,7 +259,7 @@ export class DmxController {
       const fadeInterval = Math.round(this.sacnUniverse.transitionEffectDuration/this.updateInterval);
       const destColor = this.rgbToHsv(r, g, b);
       let brightness = destColor[2];
-      const brightnessDelta = brightness - ccHSV[2];
+      const brightnessDelta = brightness - ccHSV[2];  // Don't use abs here, so fade can go either direction
       const stepAmount = brightnessDelta / fadeInterval;
       const interval = fadeInterval;
 
@@ -370,7 +362,7 @@ export class DmxController {
     private mapColors(r: number, g: number, b:number, colorOrder: string) {
       const colors: number[] = [ r, g, b ];
 
-    if (singleChannel === 0) {
+    if (colorOrder !== 'w') {
       if (colorOrder !== 'rgb') {
         for (let i = 0; i < colorOrder.length; i++) {
           switch (colorOrder[i]) {
@@ -399,7 +391,7 @@ export class DmxController {
       let green = firstChannel;
     // For single-channel fixtures, leave all three colors at the same value to allow transitions to work properly
         
-      if (singleChannel === 0) {
+      if (this.colorOrder !== 'w') {
         blue = secondChannel;
         green = thirdChannel; 
           
