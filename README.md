@@ -148,3 +148,5 @@ In order to configure accessories (i.e., lights, light strands, etc.) you need t
  - Add proper handling of colorOrder = 'w' in platform.ts.
  
  - Fix Gradient "FadeIn" transition to fade to new setting from current setting instead of 0,0,0
+
+ - Still need to fix individual fixture control when multiple fixtures are defined in the same universe.
