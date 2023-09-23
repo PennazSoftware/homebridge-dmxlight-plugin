@@ -176,7 +176,19 @@ export class DmxController {
           break;
               
         case 'sacn':
-          this.setSacnColor(colors[0], colors[1], colors[2]);
+          switch (this.sacnUniverse.transitionEffect) {
+            case 'gradient':
+              this.applyFadeInTransition(colors[0], colors[1], colors[2]);
+              break;
+            case 'random':
+              this.applyRandomTransition(colors[0], colors[1], colors[2]);
+              break;
+            case 'chase':
+              this.applyChaseTransition(colors[0], colors[1], colors[2]);
+              break;
+            default:
+                 this.setSacnColor(colors[0], colors[1], colors[2]);
+          }
           break;
       }
     }
@@ -248,12 +260,14 @@ export class DmxController {
       }, interval);
     }
 
-    // applyFadeInTransition creates a smooth transition from off to the desired color
+    // applyFadeInTransition creates a smooth transition from current to desired color
     private applyFadeInTransition(r: number, g: number, b: number) {
+      const ccRGB = this.getCurrentColor();
+      const ccHSV = this.rgbToHsv(ccRGB[0], ccRGB[1], ccRGB[2]);
       const fadeInterval = Math.round(this.sacnUniverse.transitionEffectDuration/this.updateInterval);
       const destColor = this.rgbToHsv(r, g, b);
-      let brightness = 0;
-      const brightnessDelta = destColor[2];
+      let brightness = destColor[2];
+      const brightnessDelta = brightness - ccHSV[2];
       const stepAmount = brightnessDelta / fadeInterval;
       const interval = fadeInterval;
 
@@ -262,6 +276,9 @@ export class DmxController {
 
         if (brightness > 1) {
           brightness = 1;
+        }
+        if (brightness < 0) {
+          brightness = 0;
         }
 
         const rgb = this.HSVtoRGB(destColor[0], destColor[1], brightness);
