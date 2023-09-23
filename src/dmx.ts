@@ -193,7 +193,8 @@ export class DmxController {
             this.sacnUniverse.sacnSlotsData[idx] = r;
             break;
 
-            // Only update all three values for 3-channel fixtures
+            // Don't send the other two values for single-channel fixtures
+                
             if (singleChannel === 0) {
               case 2:
                 this.sacnUniverse.sacnSlotsData[idx] = g;
@@ -377,15 +378,13 @@ export class DmxController {
       const secondChannel: number = this.sacnUniverse.sacnSlotsData[this.sacnUniverse.channelStart];
       const thirdChannel: number = this.sacnUniverse.sacnSlotsData[this.sacnUniverse.channelStart+1];
       let red = firstChannel;
-
-    // For single-channel fixtures, set all three colors to the same value to allow transitions to work properly
-      if (singleChannel === 1) {
-        let blue = firstChannel;
-        let green = firstChannel;
-          
-      } else {
-        let blue = secondChannel;
-        let green = thirdChannel; 
+      let blue = firstChannel;
+      let green = firstChannel;
+    // For single-channel fixtures, leave all three colors at the same value to allow transitions to work properly
+        
+      if (singleChannel === 0) {
+        blue = secondChannel;
+        green = thirdChannel; 
           
         switch (this.sacnUniverse.colorOrder.toLowerCase().substring(0, 1)) {
             case 'r':
