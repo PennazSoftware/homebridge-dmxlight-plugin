@@ -145,6 +145,6 @@ In order to configure accessories (i.e., lights, light strands, etc.) you need t
 
  - Fix Gradient transition to work with single-channel sACN fixtures.
 
- - Add proper handling of colorOrder = 'w' in index.ts.
+ - Add proper handling of colorOrder = 'w' in platform.ts.
  
  - Fix Gradient "FadeIn" transition to fade to new setting from current setting instead of 0,0,0
