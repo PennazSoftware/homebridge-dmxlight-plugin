@@ -431,18 +431,6 @@ export class DmxController {
       return [red, green, blue];
     }
 
-    private setSacnSingle(amount: number) {
-      const endChannel = this.sacnUniverse.channelStart-1 + this.sacnUniverse.channelCount-1;
-      //this.log.info('Updating slots buffer from ' + (startChannel-1) + ' - ' + endChannel);
-      //this.log.info('Color set to ' + r + '/' + g + '/' + b);
-
-      for (let idx = this.sacnUniverse.channelStart-1; idx <= endChannel; idx++) {
-        this.sacnUniverse.sacnSlotsData[idx] = amount;
-      }
-
-      this.sacnUniverse.sacnClient.send(this.sacnUniverse.sacnPacket);
-    }
-
     private rgbToHsv(r: number, g: number, b: number) {
       r /= 255, g /= 255, b /= 255;
 
