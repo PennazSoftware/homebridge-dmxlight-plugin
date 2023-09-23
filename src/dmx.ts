@@ -211,8 +211,6 @@ export class DmxController {
         if (p > 3) {
           p = 1;
         }
-      }
-
       this.sacnUniverse.sacnClient.send(this.sacnUniverse.sacnPacket);
     }
 
