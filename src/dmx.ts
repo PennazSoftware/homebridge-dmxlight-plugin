@@ -96,11 +96,7 @@ export class DmxController {
               this.applyChaseTransition(colors[0], colors[1], colors[2]);
               break;
             default:
-              if (this.sacnUniverse.colorOrder === 'w') {
-                this.setSacnSingle(255);
-              } else {
-                this.setSacnColor(colors[0], colors[1], colors[2]);
-              }
+                 this.setSacnColor(colors[0], colors[1], colors[2]);
           }
           break;
       }
@@ -136,11 +132,7 @@ export class DmxController {
               this.applyChaseTransition(0, 0, 0);
               break;
             default:
-              if (this.sacnUniverse.colorOrder === 'w') {
-                this.setSacnSingle(0);
-              } else {
                 this.setSacnColor(0, 0, 0);
-              }
           }
           break;
       }
@@ -360,6 +352,7 @@ export class DmxController {
     private mapColors(r: number, g: number, b:number, colorOrder: string) {
       const colors: number[] = [ r, g, b ];
 
+    if (singleChannel === 0) {
       if (colorOrder !== 'rgb') {
         for (let i = 0; i < colorOrder.length; i++) {
           switch (colorOrder[i]) {
@@ -375,7 +368,7 @@ export class DmxController {
           }
         }
       }
-
+    }
       return colors;
     }
 
@@ -384,6 +377,11 @@ export class DmxController {
       const secondChannel: number = this.sacnUniverse.sacnSlotsData[this.sacnUniverse.channelStart];
       const thirdChannel: number = this.sacnUniverse.sacnSlotsData[this.sacnUniverse.channelStart+1];
       let red = firstChannel;
+      blue = 0;
+      green = 0;
+
+     if (singleChannel === 0) {
+
       let blue = secondChannel;
       let green = thirdChannel;
 
@@ -423,7 +421,7 @@ export class DmxController {
           break;
       }
 
-
+                }
       return [red, green, blue];
     }
 
