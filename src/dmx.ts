@@ -27,6 +27,8 @@ export class DmxController {
       if (this.sacnUniverse.colorOrder === 'w') {
         singleChannel = 1;
       }
+      // Internally we will treat single-channel as standard rgb, using the 'r' value for all three, 
+      // so transitions will work properly, but the setSacnColor function will only send the first value.
 
       if (serialPort !== '') {
         // Configure Enttec Pro
@@ -46,16 +48,11 @@ export class DmxController {
       // Initialize SACN Universe if necessary
       this.sacnUniverse = new SacnUniverse(ipAddress, universe, channelStart, channelCount, colorOrder,
         transitionEffect, transitionEffectDuration, log);
-
     }
 
     setOn(hue: number, saturation: number, brightness: number) {
 
       const rgb = this.HSVtoRGB(hue/360, saturation/100, brightness/100);
-
-    // Internally we will treat single-channel as standard rgb, using the first value for all three, 
-    // so transitions will work for single-channel sACN fixtures.
-    // (The setSacnColor function only sends the first value for single-channel fixtures.)
         
         this.log.info('DMX On with Color: HSV=' + hue + '/' + saturation + '%/' + brightness + '%, RGB=' + rgb.r + '/' +
         rgb.g + '/' + rgb.b + ' (Universe #' + this.sacnUniverse.universe + ', Channels #' + this.sacnUniverse.channelStart + '-' +
