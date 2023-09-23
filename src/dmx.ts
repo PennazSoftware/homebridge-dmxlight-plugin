@@ -50,7 +50,12 @@ export class DmxController {
     // Handle single-channel operations
     if (this.sacnUniverse.colorOrder === 'w') {
         singleChannel = 1;
+    } else {
+        singleChannel = 0;
     }
+    // Internally we will treat single-channel as standard rgb, using the first value for all three, 
+    // so transitions will work for single-channel sACN fixtures.
+    // (The setSacnColor function only sends the first value for single-channel fixtures.)
         
         this.log.info('DMX On with Color: HSV=' + hue + '/' + saturation + '%/' + brightness + '%, RGB=' + rgb.r + '/' +
         rgb.g + '/' + rgb.b + ' (Universe #' + this.sacnUniverse.universe + ', Channels #' + this.sacnUniverse.channelStart + '-' +
@@ -120,6 +125,7 @@ export class DmxController {
             [this.sacnUniverse.channelStart+2]: 0 };
           this.dmx.update(this.dmxUniverseName, channel);
           break;
+              
         case 'sacn':
           switch (this.sacnUniverse.transitionEffect) {
             case 'gradient':
@@ -166,15 +172,12 @@ export class DmxController {
           // eslint-disable-next-line no-case-declarations
           let channel = { [this.sacnUniverse.channelStart]: colors[0]};
           this.dmx.update(this.dmxUniverseName, channel);
-
-        if (singleChannel === 0) {
           channel = { [this.sacnUniverse.channelStart+1]: colors[1]};
           this.dmx.update(this.dmxUniverseName, channel);
-
           channel = { [this.sacnUniverse.channelStart+2]: colors[2]};
           this.dmx.update(this.dmxUniverseName, channel);
-        }
           break;
+              
         case 'sacn':
           this.setSacnColor(colors[0], colors[1], colors[2]);
           break;
@@ -192,6 +195,8 @@ export class DmxController {
           case 1:
             this.sacnUniverse.sacnSlotsData[idx] = r;
             break;
+
+            // Only update all three values for 3-channel fixtures
             if (singleChannel === 0) {
               case 2:
                 this.sacnUniverse.sacnSlotsData[idx] = g;
@@ -252,7 +257,7 @@ export class DmxController {
       const fadeInterval = Math.round(this.sacnUniverse.transitionEffectDuration/this.updateInterval);
       const destColor = this.rgbToHsv(r, g, b);
       let brightness = 0;
-      const brightnessDelta =destColor[2];
+      const brightnessDelta = destColor[2];
       const stepAmount = brightnessDelta / fadeInterval;
       const interval = fadeInterval;
 
@@ -377,14 +382,16 @@ export class DmxController {
       const secondChannel: number = this.sacnUniverse.sacnSlotsData[this.sacnUniverse.channelStart];
       const thirdChannel: number = this.sacnUniverse.sacnSlotsData[this.sacnUniverse.channelStart+1];
       let red = firstChannel;
-      blue = 0;
-      green = 0;
 
-     if (singleChannel === 0) {
-
-      let blue = secondChannel;
-      let green = thirdChannel;
-
+    // For single-channel fixtures, set all three colors to the same value to allow transitions to work properly
+      if (singleChannel === 1) {
+        let blue = firstChannel;
+        let green = firstChannel;
+          
+      } else {
+        let blue = secondChannel;
+        let green = thirdChannel; 
+          
       switch (this.sacnUniverse.colorOrder.toLowerCase().substring(0, 1)) {
         case 'r':
           red = firstChannel;
@@ -420,8 +427,7 @@ export class DmxController {
           blue = thirdChannel;
           break;
       }
-
-                }
+      }
       return [red, green, blue];
     }
 
