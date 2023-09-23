@@ -11,8 +11,7 @@
 This is a Homebridge platform plugin that controls DMX-based lighting control systems. The following lighting control systems have been confirmed to work but you should have luck with any sACN device:
 
 - Enttec Pro USB Compatible controllers such as the Enttec Pro or HolidayCoro Acti-Dongle.
-- Streaming ACN (E131) controllers such as the HolidayCoro Flex and Alpha Pix.
-- Chauvet DMX-AN2
+- Streaming ACN (E131) controllers such as the HolidayCoro Flex, Alpha Pix, Chauvet DMX-AN2, etc.
 
 ## Installation
 
@@ -49,7 +48,7 @@ In order to configure accessories (i.e., lights, light strands, etc.) you need t
                     "dmxStartChannel": 1,
                     "dmxChannelCount": 1,
                     "dmxUniverse": 1,
-                    "colorOrder": "rgb"
+                    "colorOrder": "w"
                 },
                 {
                     "name": "House Outline",
@@ -100,15 +99,15 @@ In order to configure accessories (i.e., lights, light strands, etc.) you need t
 
 - **dmxChannelCount**: The number of channels within the universe to control. For a single light, specify 1. If you are controlling a light strand with 100 lights then specify 100.
 
-- **colorOrder**: The order of RGB colors. Normally, lights are ordered in RGB (red, green and then blue). If the lights are in a different order then specify their order here. If not specified, the default is 'RGB'. If the lights do not support an RGB configuration (i.e., only utilize one channel) then specify "w" for the color order.
+- **colorOrder**: The order of RGB colors. Normally, lights are ordered in RGB (red, green and then blue). If the lights are in a different order then specify their order here. If not specified, the default is 'rgb'. If the lights do not support an RGB configuration (i.e., a single channel for brightness) then specify "w" for the color order.
 
-- **ipAddress**: If you are using a Streaming ACN (E131) lighting controller then specify the IP Address of the controller.
+- **ipAddress**: If you are using a sACN (E131) lighting controller then specify the IP Address of the controller.
 
-- **transitionEffect**: Specify an optional transition effect to be applied when lights are turned on or off. Transitions DO NOT apply when making color changes. Transition effects are only supported for SACN devices and do not support a 'colorOrder' configuration of "w".  Supported Effects:
+- **transitionEffect**: Specify an optional transition effect to be applied when lights are turned on or off. Transitions DO NOT apply when making color changes. Transition effects are only supported for sACN devices. If 'colorOrder' is set to "w" then only the Gradient effect will work properly, for brightness. The other transitions will give unpredictable results, as they require three-channel fixtures. Supported Effects:
 
     - **None** or **'blank'**: Do not use any transition effect
 
-    - **Gradient**: Changes from the current color to the desired color by utilizing a series of gradient color changes during the transition.
+    - **Gradient**: Changes from the current color/brightness to the desired color/brightness by utilizing a uniform "fade" transition.
 
     - **Chase**: Sets the new color one light at a time, beginning with the first light and transitioning in a linear fashion.
 
@@ -122,22 +121,30 @@ In order to configure accessories (i.e., lights, light strands, etc.) you need t
 
 ### 1.1.16 (Jan 30, 2023)
 
-  - Fixed issue where multiple accessories using the same univserse were overwriting each others commands.
+  - Fixed issue where multiple accessories using the same universe were overwriting each other's commands.
 
 ### 1.2.1 (Feb 23, 2023)
 
   - Added gradient, chase and random transition effects when lights change colors.
 
-  - Moved IP Address and Serial Port configuration into the definitino for each accessory so that multiple devices can be supported.  This is a "Breaking Change" and will require modification of the config JSON in HomeBridge.
+  - Moved IP Address and Serial Port configuration into the definition for each accessory so that multiple devices can be supported.  This is a breaking change and will require modification of the config JSON in HomeBridge.
 
 ### 1.2.4 (Jul 22, 2023)
 
- - Added support for multiple SACN devices with different IP Addresses
+ - Added support for multiple sACN devices with different IP Addresses
 
  - Added support for single-channel lights (i.e., non-RGB) using a colorOrder of 'w'. Transition effects are not supported in this configuration.
 
  - Fix Gradient (i.e., fade-in/fade-out) transition effect that was causing lights to flicker during transition.
 
- ### 1.2.4 (Jul 30, 2023)
+ ### 1.2.5 (Jul 30, 2023)
 
  - Added Enttec Pro support for single-channel lights (i.e., non-RGB) using a colorOrder of 'w'. Transition effects are not supported in this configuration.
+
+ ### 1.2.6 (Sep 23, 2023)
+
+ - Fix Gradient transition to work with single-channel sACN fixtures.
+
+ - Add proper handling of colorOrder = 'w' in index.ts.
+ 
+ - Fix Gradient "FadeIn" transition to fade to new setting from current setting instead of 0,0,0
