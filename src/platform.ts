@@ -61,10 +61,11 @@ export class DMXLightHomebridgePlatform implements DynamicPlatformPlugin {
 
       if (colorOrder.length !== 3) {
         if (colorOrder === 'w') {
-          this.log.info('Single-channel fixture found.');
+          this.log.info('Single-channel fixture defined.');
         } else {
-        this.log.info('An unsupported color order was found. Now using default of "rgb".');
-        colorOrder = 'rgb';
+          this.log.info('An unsupported color order was found. Now using default of "rgb".');
+          colorOrder = 'rgb';
+        }
       }
 
       let ipAddress = '';
