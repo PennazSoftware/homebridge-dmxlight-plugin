@@ -28,7 +28,7 @@ export class DmxController {
         singleChannel = 1;
       }
       // Internally we will treat single-channel as standard rgb, using the 'r' value for all three, 
-      // so transitions will work properly, but the setSacnColor function will only send the first value.
+      // so gradient transition will work properly, and we limit the setSacnColor function to send only the first value.
 
       if (serialPort !== '') {
         // Configure Enttec Pro
