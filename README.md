@@ -138,6 +138,10 @@ In order to configure accessories (i.e., lights, light strands, etc.) you need t
 
  - Fix Gradient (i.e., fade-in/fade-out) transition effect that was causing lights to flicker during transition.
 
- ### 1.2.4 (Jul 30, 2023)
+ ### 1.2.5 (Jul 30, 2023)
 
  - Added Enttec Pro support for single-channel lights (i.e., non-RGB) using a colorOrder of 'w'. Transition effects are not supported in this configuration.
+
+ ### 1.2.6 (Oct 01, 2023)
+
+ - Fixed Enttec Pro crashing issue during initialization. Fixed bug for single-channel lights (i.e., non-RGB) using a colorOrder of 'w'.

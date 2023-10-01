@@ -32,7 +32,7 @@ export class DmxController {
           } );
 
         // Create a dummy sacnUniverse to fulfill class requirement
-        this.sacnUniverse = new SacnUniverse('', 0, 0, 0, '', '', 0, log);
+        this.sacnUniverse = new SacnUniverse('', 1, 1, 1, '', '', 0, log);
         return;
       }
 
