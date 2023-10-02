@@ -21,8 +21,9 @@ export class SacnUniverse {
         this.sacnClient = new Client('localhost');
       }
 
-      // Create packets to support a full universe of 512
-      this.sacnPacket = this.sacnClient.createPacket(512);
+      // Create packets. The buffer size should match the number of pixels needed (8 * 3 = 24) so use the channel count.
+      // If the pixel is white only, then the buffer size should equal 1 for each light.
+      this.sacnPacket = this.sacnClient.createPacket(channelCount);
       this.sacnPacket.setSourceName('DMXLightPlugin');
       this.sacnPacket.setUniverse(universe);
       this.sacnSlotsData = this.sacnPacket.getSlotsData();
@@ -34,6 +35,6 @@ export class SacnUniverse {
       this.transitionEffect = transitionEffect.toLocaleLowerCase();
       this.transitionEffectDuration = transitionEffectDuration;
 
-      log.info('Initialized new SACN Universe #' + universe);
+      log.info('Initialized new SACN Universe #' + universe + ' with ' + channelCount + ' channel(s)');
     }
 }
