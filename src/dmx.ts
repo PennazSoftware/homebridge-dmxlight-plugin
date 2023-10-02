@@ -117,7 +117,7 @@ export class DmxController {
         case 'sacn':
           switch (this.sacnUniverse.transitionEffect) {
             case 'gradient':
-              this.applyFadeOutTransition(0, 0, 0);
+              this.applyFadeInTransition(0, 0, 0);
               break;
             case 'random':
               this.applyRandomTransition(0, 0, 0);
@@ -214,42 +214,6 @@ export class DmxController {
           p = 1;
         }
       this.sacnUniverse.sacnClient.send(this.sacnUniverse.sacnPacket);
-    }
-
-    // applyFadeOutTransition creates a smooth transition from the current color to off
-    private applyFadeOutTransition(r: number, g: number, b: number) {
-      const ccRGB = this.getCurrentColor();
-      const ccHSV = this.rgbToHsv(ccRGB[0], ccRGB[1], ccRGB[2]);
-
-      // If its already at the target then bail
-      if (b === ccHSV[2]) {
-        return;
-      }
-
-      const fadeInterval = Math.round(this.sacnUniverse.transitionEffectDuration/this.updateInterval);
-
-      let brightness = ccHSV[2];
-      const brightnessDelta = Math.abs(brightness - b);
-      const stepAmount = brightnessDelta / fadeInterval;
-      const interval = fadeInterval;
-
-      const timerId = setInterval(() => {
-        brightness = brightness - stepAmount;
-
-        if (brightness < 0) {
-          brightness = 0;
-        }
-
-        const rgb = this.HSVtoRGB(ccHSV[0], ccHSV[1], brightness);
-        //console.log('h=' + ccHSV[0] + ', s=' + ccHSV[1] + ', v: ' + brightness + ' | r=' + rgb.r + ', g=' + rgb.g + ', b=' + rgb.b);
-
-        this.setSacnColor(rgb.r, rgb.g, rgb.b);
-
-        if (brightness <= 0) {
-          clearTimeout(timerId);
-          return;
-        }
-      }, interval);
     }
 
     // applyFadeInTransition creates a smooth transition from current to desired color
