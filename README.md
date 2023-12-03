@@ -141,7 +141,7 @@ In order to configure accessories (i.e., lights, light strands, etc.) you need t
 
  - Added Enttec Pro support for single-channel lights (i.e., non-RGB) using a colorOrder of 'w'. Transition effects are not supported in this configuration.
 
- ### 1.2.6 (Sep 23, 2023)
+ ### 1.2.7 (Dec 03, 2023)
 
  - Fix Gradient transition to work with single-channel sACN fixtures.
 
